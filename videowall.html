@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>VIDEO WALL</title>
+    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background-color: black;
+        }
+
+        video {
+            float: left;
+            width: 33.33%;
+            height: 33.33vh;
+            margin: 0;
+            padding: 0;
+            display: table;
+            object-fit: cover;
+        }
+
+        video:focus {
+            outline: none;
+        }
+    </style>
+</head>
+
+<body id="container">
+
+    <video id="v0" controls muted plays-inline>
+        <source src=""
+            type="video/mp4">
+        <p>VIDEO WALL</p>
+    </video>
+
+    <script src="playlist.js"></script>
+    <script src="videowall.js"></script>
+
+</body>
+
+</html>
