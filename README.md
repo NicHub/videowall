@@ -29,3 +29,7 @@ node make_playlist.js
 - Double click `videowall.html` to open it in your browser.
 
 - Use the mouse wheel to switch between videos.
+
+<p align="center">
+<img height=400px src="https://github.com/NicHub/videowall/raw/master/videowall.jpg" />
+</p>
