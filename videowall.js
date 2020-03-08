@@ -63,7 +63,8 @@ function nextVideo() {
     // Get and Set movie metadata.  
     let moviepathidskey = parseInt(_video.getAttribute('data-moviepathidskey'));
     let moviepathids = _video.getAttribute('data-moviepathids').split(",");
-    let increment = event.deltaY > 0 ? +1 : -1;
+    let increment = event.deltaY < 0 ? -1 : +1; // If event.deltaY is undefined, then increment will be 1;
+    console.log(`increment: ${increment}`);
     moviepathidskey = (moviepathidskey + increment) % (moviepathids.length);
     moviepathidskey = moviepathidskey < 0 ? (moviepathids.length + moviepathidskey) : moviepathidskey;
     _video.setAttribute('data-moviepathidskey', moviepathidskey);
