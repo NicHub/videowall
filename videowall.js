@@ -17,17 +17,29 @@ function main() {
     for (let index = 1; index < nb_videos; index++) {
         let new_video = video_elem.cloneNode(true);
         new_video.id = "v" + index;
-        container.appendChild(new_video);
+        video_elem.parentNode.insertBefore(new_video, video_elem);
     }
 
     // Prepare each video.
     var all_videos = container.getElementsByTagName("video");
+    var remainder = playlist.length % nb_videos;
     for (let index = 0; index < nb_videos; index++) {
 
         let _video = all_videos[index];
 
-        // Set movie metadata.
-        _video.setAttribute('data-videoid', index);
+        // Set movie metadata.      
+        // `moviepathidskey` is the current index in the `moviepathids` array.
+        _video.setAttribute('data-moviepathidskey', 0);
+
+        // `moviepathids` is an array that contains the indexes of 
+        // the videos that the current video can play.
+        let moviepathids = [];
+        for (let key = index; key < playlist.length; key += nb_videos) {
+            moviepathids.push(key);
+        }
+        _video.setAttribute('data-moviepathids', moviepathids);
+
+        // `moviepathid` is the index of the current video.
         _video.setAttribute('data-moviepathid', index);
 
         // Add wheel event.
@@ -48,15 +60,15 @@ function nextVideo() {
     // Play next or previous video with mouse wheel event.
     let _video = this;
 
-    // Get and Set movie metadata.
-    let videoid = parseInt(_video.getAttribute('data-videoid'));
-    let moviepathid = parseInt(_video.getAttribute('data-moviepathid'));
-    let increment = event.deltaY > 0 ? +nb_videos : -nb_videos;
-    let newmoviepathid = moviepathid + increment;
-    if (newmoviepathid < 0)
-        newmoviepathid = playlist.length - 1 + newmoviepathid;
-    if (newmoviepathid > (playlist.length - 1))
-        newmoviepathid = videoid;
+    // Get and Set movie metadata.  
+    let moviepathidskey = parseInt(_video.getAttribute('data-moviepathidskey'));
+    let moviepathids = _video.getAttribute('data-moviepathids').split(",");
+    let increment = event.deltaY > 0 ? +1 : -1;
+    moviepathidskey = (moviepathidskey + increment) % (moviepathids.length);
+    moviepathidskey = moviepathidskey < 0 ? (moviepathids.length + moviepathidskey) : moviepathidskey;
+    _video.setAttribute('data-moviepathidskey', moviepathidskey);
+    _video.setAttribute('data-moviepathids', moviepathids);
+    let newmoviepathid = parseInt(moviepathids[moviepathidskey]);
     _video.setAttribute('data-moviepathid', newmoviepathid);
 
     // Set video source and play.
@@ -76,7 +88,7 @@ function setVideoSrcAndPlay(_video, _src) {
         _video.currentTime = parseInt(_video.duration * begin_at);
         var playPromise = _video.play();
         if (playPromise !== undefined) {
-            playPromise.catch(_ => {});
+            playPromise.catch(_ => { });
         }
     }, false);
 }
