@@ -12,17 +12,18 @@ function main() {
 
     var container = document.getElementById("container");
     var video_elem = document.getElementById("v0");
+    var last_video = video_elem;
 
     // Duplicate video element.
     for (let index = 1; index < nb_videos; index++) {
         let new_video = video_elem.cloneNode(true);
         new_video.id = "v" + index;
-        video_elem.parentNode.insertBefore(new_video, video_elem);
+        video_elem.parentNode.insertBefore(new_video, last_video.nextSibling);
+        last_video = new_video;
     }
 
     // Prepare each video.
     var all_videos = container.getElementsByTagName("video");
-    var remainder = playlist.length % nb_videos;
     for (let index = 0; index < nb_videos; index++) {
 
         let _video = all_videos[index];
@@ -64,7 +65,6 @@ function nextVideo() {
     let moviepathidskey = parseInt(_video.getAttribute('data-moviepathidskey'));
     let moviepathids = _video.getAttribute('data-moviepathids').split(",");
     let increment = event.deltaY < 0 ? -1 : +1; // If event.deltaY is undefined, then increment will be 1;
-    console.log(`increment: ${increment}`);
     moviepathidskey = (moviepathidskey + increment) % (moviepathids.length);
     moviepathidskey = moviepathidskey < 0 ? (moviepathids.length + moviepathidskey) : moviepathidskey;
     _video.setAttribute('data-moviepathidskey', moviepathidskey);
@@ -80,6 +80,9 @@ function nextVideo() {
  *
  **/
 function setVideoSrcAndPlay(_video, _src) {
+
+    console.log(`${_video.id}: ${_src}`);
+
     // Set movie src.
     _video.getElementsByTagName("source")[0].src = _src;
 
