@@ -11,7 +11,7 @@
 
 let root_dir = "..";
 let rel_path = true;
-let extensions = (".mp4", "webm");
+let extensions = ["mp4", "webm"];
 
 var fs = require('fs');
 var path = require('path');
