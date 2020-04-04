@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>VIDEO WALL</title>
     <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico" />
     <style>
@@ -12,13 +12,14 @@
             margin: 0;
             padding: 0;
             width: 100%;
+            height: 100%;
             background-color: black;
+            color: white;
+            font-family: Menlo, monospace;
         }
 
         video {
             float: left;
-            width: 33.33%;
-            height: 33.33vh;
             margin: 0;
             padding: 0;
             display: table;
@@ -28,14 +29,38 @@
         video:focus {
             outline: none;
         }
+
+        .nb_videos_1 {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .nb_videos_2 {
+            width: 50%;
+            height: 100vh;
+        }
+
+        .nb_videos_4 {
+            width: 50%;
+            height: 50vh;
+        }
+
+        .nb_videos_9 {
+            width: 33.33%;
+            height: 33.33vh;
+        }
+
+        .nb_videos_16 {
+            width: 25%;
+            height: 25vh;
+        }
     </style>
 </head>
 
 <body id="container">
 
     <video id="v0" controls muted plays-inline>
-        <source src=""
-            type="video/mp4">
+        <source src="" type="video/mp4">
         <p>VIDEO WALL</p>
     </video>
 
