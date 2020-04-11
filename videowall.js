@@ -4,6 +4,8 @@ const begin_at = 1 / 4;
 var nb_videos = 9;
 const allowed_nb_videos = [1, 2, 4, 9, 16, 25, 36, 49, 64, 81];
 var all_videos;
+var video_has_controls = true;
+var original_doc_title = document.title;
 
 main(nb_videos);
 
@@ -13,8 +15,11 @@ main(nb_videos);
 function main(nb_videos) {
 
     var container = document.getElementById("container");
-    var video_elem = document.getElementById("v0");
-    var last_video = video_elem;
+    var video_template = document.getElementById("v0");
+    var last_video = video_template;
+
+    video_has_controls = video_template.controls;
+    document.title = `${original_doc_title} | ${playlist.length} VIDEOS`;
 
     // Test if nb_videos makes sense.
     if (!allowed_nb_videos.includes(nb_videos)) {
@@ -31,18 +36,18 @@ function main(nb_videos) {
     }
 
     // Change css class of video.
-    video_elem.classList = `nb_videos_${nb_videos}`;
+    video_template.classList = `nb_videos_${nb_videos}`;
 
     // Key listener.
-    container.addEventListener("keyup", keyboard_shortcuts_management);
+    document.getElementsByTagName("body")[0].addEventListener("keyup", keyboard_shortcuts_management);
 
     // Duplicate video element.
-    all_videos = [video_elem];
+    all_videos = [video_template];
     for (let index = 1; index < nb_videos; index++) {
-        let _video = video_elem.cloneNode(true);
+        let _video = video_template.cloneNode(true);
         _video.id = "v" + index;
-        if (video_elem.hasAttribute("muted")) _video.muted = true; // For FF.
-        video_elem.parentNode.insertBefore(_video, last_video.nextSibling);
+        if (video_template.hasAttribute("muted")) _video.muted = true; // For FF.
+        video_template.parentNode.insertBefore(_video, last_video.nextSibling);
         last_video = _video;
         all_videos.push(_video);
     }
@@ -122,7 +127,6 @@ function nextVideo(_video, increment) {
     // Get and Set movie metadata.
     let moviepathidskey = parseInt(_video.getAttribute("data-moviepathidskey"));
     let moviepathids = _video.getAttribute("data-moviepathids").split(",");
-    // let increment = event.deltaY < 0 ? -1 : +1; // If event.deltaY is undefined, then increment will be 1;
     moviepathidskey = (moviepathidskey + increment) % (moviepathids.length);
     moviepathidskey = moviepathidskey < 0 ? (moviepathids.length + moviepathidskey) : moviepathidskey;
     _video.setAttribute("data-moviepathidskey", moviepathidskey);
@@ -139,18 +143,23 @@ function nextVideo(_video, increment) {
  **/
 function setVideoSrcAndPlay(_video, _src) {
 
-    // Set movie src.
-    _video.getElementsByTagName("source")[0].src = _src;
+    _video.addEventListener("error", function () {
+        console.log(`Error: ${_src}`);
+        _video.src = "404.mp4";
+    });
 
-    // Load, set movie position in time and play.
-    _video.load();
     _video.addEventListener("loadeddata", function () {
         _video.currentTime = parseInt(_video.duration * begin_at);
+        if (_video.src.includes("404.mp4")) { _video.controls = false; return; }
+        _video.controls = video_has_controls;
         var playPromise = _video.play();
         if (playPromise !== undefined) {
             playPromise.catch(_ => { });
         }
     }, false);
+
+    _video.src = _src;
+    _video.load();
 }
 
 /***

@@ -12,9 +12,10 @@
 let root_dir = "..";
 let rel_path = true;
 let extensions = ["mp4", "webm"];
+let excludes = ["novideowall", "404.mp4"];
 
-var fs = require('fs');
-var path = require('path');
+var fs = require("fs");
+var path = require("path");
 var walk = function (dir, done) {
     var results = [];
     fs.readdir(dir, function (err, list) {
@@ -31,7 +32,13 @@ var walk = function (dir, done) {
                         next();
                     });
                 } else {
-                    results.push(file);
+                    let do_it = true;
+                    for (let index = 0; index < excludes.length; index++) {
+                        if (file.includes(excludes[index])) { do_it = false; break; }
+                    }
+                    if (do_it) {
+                        results.push(file);
+                    }
                     next();
                 }
             });
@@ -65,7 +72,7 @@ walk(root_dir, function (err, results) {
         playlist += "]\n";
     }
 
-    fs.writeFile('playlist.js', playlist, (err) => {
+    fs.writeFile("playlist.js", playlist, (err) => {
         if (err) throw err;
     });
 });
