@@ -50,7 +50,6 @@ node make_playlist.js
 - Safari, but the Developer tools need to be activated and the browser relaunched.
 - Firefox, works but the videos may not play at start, you need to press k, ← or → .
 
-
 <p align="center">
-<img height=400px src="https://github.com/NicHub/videowall/raw/master/videowall.jpg" />
+<img height=400px src="https://github.com/NicHub/videowall/raw/master/assets/videowall.jpg" />
 </p>
