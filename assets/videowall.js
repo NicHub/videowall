@@ -20,6 +20,25 @@ init();
  **/
 function init() {
 
+    let container = document.getElementById("container");
+
+    // Abort if the playlist is not defined.
+    if (typeof playlist === "undefined") {
+        container.innerHTML = `
+<p>The file playlist.js cannot be found! You have to create "<code>assets/playlist.js</code>" with the following content:</p>
+<pre>playlist <span class="pl-k">=</span> [
+    <span class="pl-s"><span class="pl-pds">"</span>../file_1.mp4<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>../file_2.mp4<span class="pl-pds">"</span></span>
+    ]</pre>`;
+        return;
+    }
+
+    // Abort if the playlist is empty.
+    if (playlist.length === 0) {
+        container.innerHTML = "<p>Playlist is empty. Aborting.</p>";
+        return;
+    }
+
     // Create the <style> element that will by modified when the layout changes.
     let style = document.createElement("style");
     style.id = "created_by_js";
