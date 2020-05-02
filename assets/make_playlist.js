@@ -13,7 +13,7 @@
 
 let root_dir = "../..";
 let rel_path = true;
-let extensions = ["mp4", "webm"];
+let extensions = ["mp4", "webm", "m4v"]
 let excludes = ["novideowall", "404.mp4", "empty.mp4"];
 
 var fs = require("fs");
