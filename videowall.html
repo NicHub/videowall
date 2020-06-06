@@ -52,11 +52,13 @@
 
     <script>
         /***
-         * User choices.
+         * Startup defaults, can change at runtime.
          **/
-        const BEGIN_AT = 1 / 4; // Time offset given in fraction of total time.
-        const NB_VIDEOS_MAX = 36; // Can take the value 2 or any perfect square number (1, 4, 9, 16,...).
-        var NB_VIDEOS = 9; // Startup default. Can be changed by the user at runtime.
+        const STARTUP_DEFAULTS = {
+            "BEGIN_AT" : 1 / 4, // Time offset when starting to play. Given in fraction of total time.
+            "NB_VIDEOS_MAX" : 36, // Can take the value 2 or any perfect square number (1, 4, 9, 16,...).
+            "NB_VIDEOS" : 4
+        }
     </script>
     <script src="./assets/playlist.js"></script>
     <script src="./assets/videowall.js"></script>

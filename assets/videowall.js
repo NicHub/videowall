@@ -11,6 +11,11 @@ var ALLOWED_NB_VIDEOS;
 var ALL_VIDEOS;
 var VIDEO_TEMPLATE = document.getElementById("v0");
 const ORIGINAL_DOC_TITLE = document.title;
+var MOVIE_ORDERS = [];
+
+const BEGIN_AT = STARTUP_DEFAULTS["BEGIN_AT"];
+const NB_VIDEOS_MAX = STARTUP_DEFAULTS["NB_VIDEOS_MAX"];
+var NB_VIDEOS = STARTUP_DEFAULTS["NB_VIDEOS"];
 
 // Start.
 init();
@@ -132,6 +137,10 @@ function main() {
 
         // Add ended event.
         _video.addEventListener("ended", function () { nextVideo(this, 1) }, false);
+
+        // Drag and drop for reordering by user.
+        _video.draggable = true;
+        _video.ondragend = function () { onDragEnd(_video.id) };
 
         // Set video source and play.
         setVideoSrcAndPlay(_video, playlist[index]);
@@ -264,6 +273,55 @@ function togglePlayPauseAll() {
 /***
  *
  **/
+function getVideoUnderCursor() {
+
+    let _video = document.querySelector("video:hover");
+    if (_video === void 0)
+        _video = false;
+    return _video;
+}
+
+/***
+ * To go to the end, set time = -1
+ **/
+function videoGoToTime(video, time) {
+
+    if (!video) { return; }
+    if (time === -1) {
+        time = video.duration;
+        video.pause();
+    }
+    video.currentTime = parseInt(time);
+}
+
+/***
+ *
+ **/
+function videoGoForwardOrBackward(video, dT) {
+
+    if (!video) { return; }
+    video.currentTime = parseInt(video.currentTime + dT);
+}
+
+/***
+ *
+ **/
+function onDragEnd(source_id) {
+
+    let source_vid = document.getElementById(source_id);
+    let target_vid = getVideoUnderCursor();
+    let source_moviepathid = source_vid.getAttribute("data-moviepathid");
+    let target_moviepathid = target_vid.getAttribute("data-moviepathid");
+    let source_moviepath = playlist[source_moviepathid];
+    let target_moviepath = playlist[target_moviepathid];
+    playlist[source_moviepathid] = target_moviepath;
+    playlist[target_moviepathid] = source_moviepath;
+    main();
+}
+
+/***
+ *
+ **/
 function keyboardShortcutsManagement(event) {
 
     if (["ArrowUp"].includes(event.key)) {
@@ -281,12 +339,24 @@ function keyboardShortcutsManagement(event) {
     else if (["ArrowLeft"].includes(event.key)) {
         nextVideoAll(-1);
     }
-    else if (["k"].includes(event.key)) {
+    else if ([" ", "k"].includes(event.key)) {
         togglePlayPauseAll();
     }
     else if (["s"].includes(event.key)) {
         playlist = shuffle(playlist);
         main();
+    }
+    else if (["Home"].includes(event.key)) {
+        videoGoToTime(getVideoUnderCursor(), 0);
+    }
+    else if (["End"].includes(event.key)) {
+        videoGoToTime(getVideoUnderCursor(), -1);
+    }
+    else if (["j"].includes(event.key)) {
+        videoGoForwardOrBackward(getVideoUnderCursor(), -10);
+    }
+    else if (["l"].includes(event.key)) {
+        videoGoForwardOrBackward(getVideoUnderCursor(), +10);
     }
     else {
         return;
