@@ -25,7 +25,7 @@ init();
  **/
 function init() {
 
-    let container = document.getElementById("container");
+    const container = document.getElementById("container");
 
     // Abort if the playlist is not defined.
     if (typeof playlist === "undefined") {
@@ -45,9 +45,9 @@ function init() {
     }
 
     // Create the <style> element that will by modified when the layout changes.
-    let style = document.createElement("style");
+    const style = document.createElement("style");
     style.id = "created_by_js";
-    let head = document.getElementsByTagName("head")[0];
+    const head = document.getElementsByTagName("head")[0];
     head.appendChild(style);
 
     // Add the class ".modified_by_js" to the video template.
@@ -69,7 +69,7 @@ function init() {
         ALLOWED_NB_VIDEOS = [1];
     } else {
         ALLOWED_NB_VIDEOS = [1, 2];
-        let _max = Math.floor(Math.sqrt(NB_VIDEOS_MAX));
+        const _max = Math.floor(Math.sqrt(NB_VIDEOS_MAX));
         for (let index = 2; index <= _max; index++) {
             ALLOWED_NB_VIDEOS.push(index * index);
         }
@@ -88,12 +88,12 @@ function init() {
 function main() {
 
     // Create the CSS style according to the current layout.
-    let _w = NB_VIDEOS === 2 ? 50 : 100 / Math.sqrt(NB_VIDEOS);
-    let _h = NB_VIDEOS === 2 ? 100 : _w;
+    const _w = NB_VIDEOS === 2 ? 50 : 100 / Math.sqrt(NB_VIDEOS);
+    const _h = NB_VIDEOS === 2 ? 100 : _w;
     document.getElementById("created_by_js").innerHTML = `.modified_by_js {width: ${_w}%; height: ${_h}vh;}`
 
     // Remove current videos.
-    let cur_videos = document.getElementsByTagName("video");
+    const cur_videos = document.getElementsByTagName("video");
     for (let cnt = cur_videos.length - 1; cnt >= 0; cnt--) {
         if (cur_videos[cnt].id !== "v0") {
             cur_videos[cnt].parentNode.removeChild(cur_videos[cnt]);
@@ -115,7 +115,7 @@ function main() {
     // Prepare each video.
     for (let index = 0; index < NB_VIDEOS; index++) {
 
-        let _video = ALL_VIDEOS[index];
+        const _video = ALL_VIDEOS[index];
 
         // Set movie metadata.
         // `moviepathidskey` is the current index in the `moviepathids` array.
@@ -123,7 +123,7 @@ function main() {
 
         // `moviepathids` is an array that contains the indexes of
         // the videos that the current player can play.
-        let moviepathids = [];
+        const moviepathids = [];
         for (let key = index; key < playlist.length; key += NB_VIDEOS) {
             moviepathids.push(key);
         }
@@ -139,7 +139,7 @@ function main() {
         _video.addEventListener("ended", function () { nextVideo(this, 1) }, false);
 
         // Drag and drop for reordering by user.
-        _video.draggable = true;
+        _video.draggable = false; // TODO: Drag and drop don’t work as expected yet.
         _video.ondragend = function () { onDragEnd(_video.id) };
 
         // Set video source and play.
@@ -158,13 +158,13 @@ function shuffle(array) {
     // While there are elements in the array
     while (counter > 0) {
         // Pick a random index
-        let index = Math.floor(Math.random() * counter);
+        const index = Math.floor(Math.random() * counter);
 
         // Decrease counter by 1
         counter--;
 
         // And swap the last element with it
-        let temp = array[counter];
+        const temp = array[counter];
         array[counter] = array[index];
         array[index] = temp;
     }
@@ -178,7 +178,7 @@ function shuffle(array) {
 function nextVideoAll(increment) {
 
     for (let index = 0; index < NB_VIDEOS; index++) {
-        let _video = ALL_VIDEOS[index];
+        const _video = ALL_VIDEOS[index];
         nextVideo(_video, increment)
     }
 }
@@ -190,12 +190,12 @@ function nextVideo(_video, increment) {
 
     // Get and Set movie metadata.
     let moviepathidskey = parseInt(_video.getAttribute("data-moviepathidskey"));
-    let moviepathids = _video.getAttribute("data-moviepathids").split(",");
+    const moviepathids = _video.getAttribute("data-moviepathids").split(",");
     moviepathidskey = (moviepathidskey + increment) % (moviepathids.length);
     moviepathidskey = moviepathidskey < 0 ? (moviepathids.length + moviepathidskey) : moviepathidskey;
     _video.setAttribute("data-moviepathidskey", moviepathidskey);
     _video.setAttribute("data-moviepathids", moviepathids);
-    let newmoviepathid = parseInt(moviepathids[moviepathidskey]);
+    const newmoviepathid = parseInt(moviepathids[moviepathidskey]);
     _video.setAttribute("data-moviepathid", newmoviepathid);
 
     // Set video source and play.
@@ -220,7 +220,7 @@ function setVideoSrcAndPlay(_video, _src) {
             return;
         }
         _video.controls = V_ATTR["controls"];
-        let play_promise = IS_PLAYING ? _video.pause() : _video.play();
+        const play_promise = IS_PLAYING ? _video.pause() : _video.play();
         if (play_promise !== undefined) { play_promise.catch(_ => { }); }
     }, false);
 
@@ -260,14 +260,24 @@ function changeLayout(layout_id) {
 /***
  *
  **/
-function togglePlayPauseAll() {
+function videoPlayPauseAllToggle() {
 
     IS_PLAYING = !IS_PLAYING;
     for (let index = 0; index < NB_VIDEOS; index++) {
-        let _video = ALL_VIDEOS[index];
-        let play_promise = IS_PLAYING ? _video.pause() : _video.play();
+        const _video = ALL_VIDEOS[index];
+        const play_promise = IS_PLAYING ? _video.pause() : _video.play();
         if (play_promise !== undefined) { play_promise.catch(_ => { }); }
     }
+}
+
+/***
+ *
+ **/
+function videoPause(video) {
+
+    if (!video) { return; }
+    const play_promise = video.pause();
+    if (play_promise !== undefined) { play_promise.catch(_ => { }); }
 }
 
 /***
@@ -276,8 +286,7 @@ function togglePlayPauseAll() {
 function getVideoUnderCursor() {
 
     let _video = document.querySelector("video:hover");
-    if (_video === void 0)
-        _video = false;
+    if (_video === void 0) { _video = false; }
     return _video;
 }
 
@@ -306,14 +315,48 @@ function videoGoForwardOrBackward(video, dT) {
 /***
  *
  **/
+function videoMuteToggle(video) {
+
+    if (!video) { return; }
+    for (let index = 0; index < NB_VIDEOS; index++) {
+        const _video = ALL_VIDEOS[index];
+        if (_video.id === video.id) { video.muted = !video.muted; }
+        else { _video.muted = true; }
+    }
+}
+
+/***
+ *
+ **/
+function videoFullScreenToggle(video) {
+
+    if (!video) { return; }
+    for (let index = 0; index < NB_VIDEOS; index++) {
+        const _video = ALL_VIDEOS[index];
+        if (_video.id !== video.id) { videoPause(_video); }
+    }
+    if (video.requestFullscreen) {
+        video.requestFullscreen();
+    } else if (video.mozRequestFullScreen) {
+        video.mozRequestFullScreen();
+    } else if (video.webkitRequestFullscreen) {
+        video.webkitRequestFullscreen();
+    } else if (video.msRequestFullscreen) {
+        video.msRequestFullscreen();
+    }
+}
+
+/***
+ *
+ **/
 function onDragEnd(source_id) {
 
-    let source_vid = document.getElementById(source_id);
-    let target_vid = getVideoUnderCursor();
-    let source_moviepathid = source_vid.getAttribute("data-moviepathid");
-    let target_moviepathid = target_vid.getAttribute("data-moviepathid");
-    let source_moviepath = playlist[source_moviepathid];
-    let target_moviepath = playlist[target_moviepathid];
+    const source_vid = document.getElementById(source_id);
+    const target_vid = getVideoUnderCursor();
+    const source_moviepathid = source_vid.getAttribute("data-moviepathid");
+    const target_moviepathid = target_vid.getAttribute("data-moviepathid");
+    const source_moviepath = playlist[source_moviepathid];
+    const target_moviepath = playlist[target_moviepathid];
     playlist[source_moviepathid] = target_moviepath;
     playlist[target_moviepathid] = source_moviepath;
     main();
@@ -339,9 +382,6 @@ function keyboardShortcutsManagement(event) {
     else if (["ArrowLeft"].includes(event.key)) {
         nextVideoAll(-1);
     }
-    else if ([" ", "k"].includes(event.key)) {
-        togglePlayPauseAll();
-    }
     else if (["s"].includes(event.key)) {
         playlist = shuffle(playlist);
         main();
@@ -355,8 +395,17 @@ function keyboardShortcutsManagement(event) {
     else if (["j"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), -10);
     }
+    else if ([" ", "k"].includes(event.key)) {
+        videoPlayPauseAllToggle();
+    }
     else if (["l"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), +10);
+    }
+    else if (["m"].includes(event.key)) {
+        videoMuteToggle(getVideoUnderCursor());
+    }
+    else if (["f"].includes(event.key)) {
+        videoFullScreenToggle(getVideoUnderCursor());
     }
     else {
         return;
