@@ -365,6 +365,17 @@ function onDragEnd(source_id) {
 /***
  *
  **/
+function updateClipboard(newClip) {
+    navigator.clipboard.writeText(newClip).then(function () {
+        /* clipboard successfully set */
+    }, function () {
+        /* clipboard write failed */
+    });
+}
+
+/***
+ *
+ **/
 function keyboardShortcutsManagement(event) {
 
     if (["ArrowUp"].includes(event.key)) {
@@ -385,6 +396,16 @@ function keyboardShortcutsManagement(event) {
     else if (["s"].includes(event.key)) {
         playlist = shuffle(playlist);
         main();
+    }
+    else if (["o"].includes(event.key)) {
+        const video = getVideoUnderCursor();
+        let path = decodeURI(video.src).substring(7);
+        if (window.navigator.platform in ["Win32"]) {
+            path = path.replace(/\//g, "\\");
+        }
+        console.log(path);
+        updateClipboard(`"${path}"`);
+        window.open(video.src);
     }
     else if (["Home"].includes(event.key)) {
         videoGoToTime(getVideoUnderCursor(), 0);
