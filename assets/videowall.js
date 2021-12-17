@@ -399,7 +399,13 @@ function keyboardShortcutsManagement(event) {
     }
     else if (["o"].includes(event.key)) {
         const video = getVideoUnderCursor();
-        let path = decodeURI(video.src).substring(7);
+        let path = video.src.substring(7);
+        try {
+            path = decodeURI(path);
+        } catch (e) {
+            console.error(e);
+        }
+        path = path.replace(/%23/g, "#");
         if (window.navigator.platform in ["Win32"]) {
             path = path.replace(/\//g, "\\");
         }
