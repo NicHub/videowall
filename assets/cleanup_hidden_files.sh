@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Find all hidden directories.
-find . -not -path "*.git/*" -not -name ".git*" -type d -name ".*" # -delete
+find . -type d -name ".*" -not -name ".git*" -not -name ".Trashes*" -not -name ".Spotlight-V100*"
 
 # Find all hidden files.
-find . -not -path "*.git/*" -not -name ".git*" -type f -name ".*" # -delete
+find . -type f -name ".*" -not -path "*.git/*" -not -path "*.Trashes/*" -not -path "*.Spotlight-V100/*" -not -name ".git*"

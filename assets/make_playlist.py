@@ -11,6 +11,8 @@ EXTENSIONS = ("mp4", "webm", "m4v")
 # If EXCLUDES is empty, this test is skipped.
 EXCLUDES = ("novideowall", "404.mp4", "empty.mp4")
 
+PATHNAME = os.path.realpath(os.path.dirname(__file__))
+os.chdir(PATHNAME)
 PATH_TO_WALK = "../../videos/"
 PLAYLIST_FILE_NAME = "playlist.js"
 
@@ -21,7 +23,7 @@ def list_files(path_to_walk):
     filtered_files = []
     hidden_files = []
     non_supported_extension_files = []
-    files_with_excludes = []
+    excluded_files = []
 
     for root, _, files in os.walk(path_to_walk):
 
@@ -46,14 +48,15 @@ def list_files(path_to_walk):
             for exclude in EXCLUDES:
                 if file_name.find(exclude) > -1:
                     exclude_found = True
+                    excluded_files.append(os.path.abspath(file_name))
                     break
             if exclude_found:
-                files_with_excludes.append(os.path.abspath(file_name))
                 continue
 
             # If we arrived here, the file is OK.
             # Make its path name relative to videowall.html,
-            # URL encode it and add it to the list.
+            # URL encode it with urllib.parse.quote,
+            # and add it to the list.
             file_name = file_name[3:]
             file_name = urllib.parse.quote(file_name)
             filtered_files.append(file_name)
@@ -64,7 +67,7 @@ def list_files(path_to_walk):
         "filtered_files": filtered_files,
         "hidden_files": hidden_files,
         "non_supported_extension_files": non_supported_extension_files,
-        "files_with_excludes": files_with_excludes
+        "excluded_files": excluded_files
     }
     return files
 
@@ -75,7 +78,7 @@ def make_playlist(filtered_files):
     # If the playlist is empty.
     if len(filtered_files) == 0:
         playlist = "playlist = []"
-        print("CREATING EMPTY PLAYLIST")
+        print("WARNING: PLAYLIST IS EMPTY !")
         return playlist
 
     # If the playlist is not empty.
@@ -109,14 +112,15 @@ def report_alien_files(files):
 
     # Print the list of files with non supported extentions.
     if len(files["non_supported_extension_files"]) > 0:
-        print(
-            f'\n{len(files["non_supported_extension_files"])} FILE(S) WITH NON SUPPORTED EXTENSION FOUND:')
+        print(f'\n{len(files["non_supported_extension_files"])} FILE(S)'
+              'WITH NON SUPPORTED EXTENSION FOUND:')
         print('"' + '"\n"'.join(files["non_supported_extension_files"]) + '"')
 
     # Print the list of files with excludes.
-    if len(files["files_with_excludes"]) > 0:
-        print(f'\n{len(files["files_with_excludes"])} FILE(S) WITH EXCLUDE STRING FOUND:')
-        print('"' + '"\n"'.join(files["files_with_excludes"]) + '"')
+    if len(files["excluded_files"]) > 0:
+        print(
+            f'\n{len(files["excluded_files"])} FILE(S) WITH EXCLUDE STRING FOUND:')
+        print('"' + '"\n"'.join(files["excluded_files"]) + '"')
 
 
 if __name__ == "__main__":
