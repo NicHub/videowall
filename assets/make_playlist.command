@@ -11,9 +11,4 @@
 
 cd -- "$(dirname "$0")"
 
-# /usr/bin/env node ./make_playlist.js
 /usr/bin/env python3 ./make_playlist.py
-
-echo -e "\n###\n"
-ls -l playlist.js
-echo -e "\n###\n"
