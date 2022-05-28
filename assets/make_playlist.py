@@ -62,7 +62,8 @@ def list_files(path_to_walk):
             filtered_files.append(file_name)
 
     # Sort the list of filtered files and return it.
-    filtered_files.sort().reverse()
+    filtered_files.sort()
+    filtered_files.reverse()
     files = {
         "filtered_files": filtered_files,
         "hidden_files": hidden_files,
