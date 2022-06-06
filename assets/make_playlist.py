@@ -9,7 +9,10 @@ EXTENSIONS = ("mp4", "webm", "m4v")
 
 # The file name must not contain one of EXCLUDES.
 # If EXCLUDES is empty, this test is skipped.
-EXCLUDES = ("novideowall", "404.mp4", "empty.mp4")
+# If EXCLUDES contains only one element, this
+# element must be followed by a comma,
+# otherwise Python treats the tuple as a string.
+EXCLUDES = ("novideowall", )
 
 PATHNAME = os.path.realpath(os.path.dirname(__file__))
 os.chdir(PATHNAME)
