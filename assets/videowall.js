@@ -3,6 +3,7 @@
 const ORIGINAL_DOC_TITLE = document.title;
 const BEGIN_AT = STARTUP_DEFAULTS["BEGIN_AT"];
 const NB_VIDEOS_MAX = STARTUP_DEFAULTS["NB_VIDEOS_MAX"];
+const WHEEL_EVENT_DELAY = 200
 var V_ATTR = {
     controls: undefined,
     autoplay: undefined,
@@ -14,6 +15,7 @@ var ALL_VIDEOS = [];
 var VIDEO_TEMPLATE = document.getElementById("v0");
 var MOVIE_ORDERS = [];
 var NB_VIDEOS = STARTUP_DEFAULTS["NB_VIDEOS"];
+var PREVIOUS_WHEEL_TIME = 0;
 
 /**
  * Start
@@ -45,12 +47,12 @@ function init() {
 
     // Create the <style> element that will by modified when the layout changes.
     const style = document.createElement("style");
-    style.id = "created_by_js";
+    style.id = "css_generated_in_javascript";
     const head = document.getElementsByTagName("head")[0];
     head.appendChild(style);
 
-    // Add the class ".modified_by_js" to the video template.
-    VIDEO_TEMPLATE.classList.add("modified_by_js");
+    // Add the class ".modified_in_javascript" to the video template.
+    VIDEO_TEMPLATE.classList.add("modified_in_javascript");
 
     // Set document title.
     document.title = `${ORIGINAL_DOC_TITLE} | ${playlist.length} VIDEOS`;
@@ -91,8 +93,8 @@ function main() {
     const _w = NB_VIDEOS === 2 ? 50 : 100 / Math.sqrt(NB_VIDEOS);
     const _h = NB_VIDEOS === 2 ? 100 : _w;
     document.getElementById(
-        "created_by_js"
-    ).innerHTML = `.modified_by_js {width: ${_w}%; height: ${_h}vh;}`;
+        "css_generated_in_javascript"
+    ).innerHTML = `.modified_in_javascript {width: ${_w}%; height: ${_h}vh;}`;
 
     // Remove current videos.
     const cur_videos = document.getElementsByTagName("video");
@@ -137,16 +139,19 @@ function main() {
         _video.addEventListener(
             "wheel",
             function () {
-                nextVideo(this, event.deltaY < 0 ? -1 : +1);
+                const current_wheel_time = new Date().getTime();
+                if (current_wheel_time - PREVIOUS_WHEEL_TIME < WHEEL_EVENT_DELAY) return;
+                PREVIOUS_WHEEL_TIME = current_wheel_time;
+                nextVideoSingle(this, event.deltaY < 0 ? -1 : +1);
             },
-            false
+            { passive: true }
         );
 
         // Add ended event.
         _video.addEventListener(
             "ended",
             function () {
-                nextVideo(this, 1);
+                nextVideoSingle(this, 1);
             },
             false
         );
@@ -187,19 +192,19 @@ function shuffle(array) {
 }
 
 /**
- * Play next or previous video with mouse wheel event.
+ * Play next or previous video. Applies to all displayed videos.
  */
 function nextVideoAll(increment) {
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
-        nextVideo(_video, increment);
+        nextVideoSingle(_video, increment);
     }
 }
 
 /**
- * Play next or previous video with mouse wheel event.
+ * Play next or previous video. Applies to chosen video only.
  */
-function nextVideo(_video, increment) {
+function nextVideoSingle(_video, increment) {
     // Get and Set movie metadata.
     let moviepathidskey = parseInt(_video.getAttribute("data-moviepathidskey"));
     const moviepathids = _video.getAttribute("data-moviepathids").split(",");
@@ -222,7 +227,7 @@ function nextVideo(_video, increment) {
  */
 function setVideoSrcAndPlay(_video, _src) {
     _video.addEventListener("error", function () {
-        console.log(`Error: ${_src}`);
+        console.error(`Error: ${_src}`);
         _video.src = "./assets/404.mp4";
     });
 
@@ -251,7 +256,7 @@ function setVideoSrcAndPlay(_video, _src) {
     }
     _video.src = _src;
     _video.load();
-    console.log(`Playing: ${_src}`);
+    // console.log(`Playing: ${_src}`);
 }
 
 /**
@@ -266,8 +271,7 @@ function changeLayout(layout_id) {
     if (layout_id == "increase") {
         next_id = (cur_id + 1) % nb_id;
     } else if (layout_id == "decrease") {
-        next_id = cur_id - 1;
-        next_id = next_id >= 0 ? next_id : nb_id - 1;
+        next_id = (cur_id + nb_id - 1) % nb_id;
     } else if (layout_id >= 0 && layout_id < ALLOWED_NB_VIDEOS.length) {
         next_id = layout_id;
     } else {
@@ -296,9 +300,6 @@ function videoPlayPauseAllToggle() {
  *
  */
 function videoPause(video) {
-    if (!video) {
-        return;
-    }
     const play_promise = video.pause();
     if (play_promise !== undefined) {
         play_promise.catch((_) => {});
@@ -320,9 +321,6 @@ function getVideoUnderCursor() {
  * To go to the end, set time = -1
  */
 function videoGoToTime(video, time) {
-    if (!video) {
-        return;
-    }
     if (time === -1) {
         time = video.duration;
         video.pause();
@@ -334,9 +332,6 @@ function videoGoToTime(video, time) {
  *
  */
 function videoGoForwardOrBackward(video, dT) {
-    if (!video) {
-        return;
-    }
     video.currentTime = parseInt(video.currentTime + dT);
 }
 
@@ -344,9 +339,6 @@ function videoGoForwardOrBackward(video, dT) {
  *
  */
 function videoMuteToggle(video) {
-    if (!video) {
-        return;
-    }
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
         if (_video.id === video.id) {
@@ -361,9 +353,6 @@ function videoMuteToggle(video) {
  *
  */
 function videoFullScreenToggle(video) {
-    if (!video) {
-        return;
-    }
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
         if (_video.id !== video.id) {
@@ -424,10 +413,10 @@ function keyboardShortcutsManagement(event) {
         nextVideoAll(1);
     } else if (["ArrowLeft"].includes(event.key)) {
         nextVideoAll(-1);
-    } else if (["s"].includes(event.key)) {
+    } else if (["s", "S"].includes(event.key)) {
         playlist = shuffle(playlist);
         main();
-    } else if (["o"].includes(event.key)) {
+    } else if (["o", "O"].includes(event.key)) {
         const video = getVideoUnderCursor();
         let path = video.src.substring(7);
         try {
@@ -446,15 +435,15 @@ function keyboardShortcutsManagement(event) {
         videoGoToTime(getVideoUnderCursor(), 0);
     } else if (["End"].includes(event.key)) {
         videoGoToTime(getVideoUnderCursor(), -1);
-    } else if (["j"].includes(event.key)) {
+    } else if (["j", "J"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), -10);
-    } else if ([" ", "k"].includes(event.key)) {
+    } else if ([" ", "k", "K"].includes(event.key)) {
         videoPlayPauseAllToggle();
-    } else if (["l"].includes(event.key)) {
+    } else if (["l", "L"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), +10);
-    } else if (["m"].includes(event.key)) {
+    } else if (["m", "M"].includes(event.key)) {
         videoMuteToggle(getVideoUnderCursor());
-    } else if (["f"].includes(event.key)) {
+    } else if (["f", "F"].includes(event.key)) {
         videoFullScreenToggle(getVideoUnderCursor());
     } else {
         return;
