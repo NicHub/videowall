@@ -3,7 +3,7 @@
 const ORIGINAL_DOC_TITLE = document.title;
 const BEGIN_AT = STARTUP_DEFAULTS["BEGIN_AT"];
 const NB_VIDEOS_MAX = STARTUP_DEFAULTS["NB_VIDEOS_MAX"];
-const WHEEL_EVENT_DELAY = 200
+const WHEEL_EVENT_DELAY = 200;
 var V_ATTR = {
     controls: undefined,
     autoplay: undefined,
@@ -140,7 +140,11 @@ function main() {
             "wheel",
             function () {
                 const current_wheel_time = new Date().getTime();
-                if (current_wheel_time - PREVIOUS_WHEEL_TIME < WHEEL_EVENT_DELAY) return;
+                if (
+                    current_wheel_time - PREVIOUS_WHEEL_TIME <
+                    WHEEL_EVENT_DELAY
+                )
+                    return;
                 PREVIOUS_WHEEL_TIME = current_wheel_time;
                 nextVideoSingle(this, event.deltaY < 0 ? -1 : +1);
             },
@@ -443,6 +447,17 @@ function keyboardShortcutsManagement(event) {
         videoGoForwardOrBackward(getVideoUnderCursor(), +10);
     } else if (["m", "M"].includes(event.key)) {
         videoMuteToggle(getVideoUnderCursor());
+    } else if (["r", "R"].includes(event.key)) {
+        const style = document.getElementById("css_generated_in_javascript");
+        const c0 = "\nvideo { object-fit: contain !important; }";
+        const c1 = "\nvideo { object-fit: cover !important; }";
+        if (style.innerHTML.includes(c0)) {
+            style.innerHTML = style.innerHTML.replace(c0, c1);
+        } else if (style.innerHTML.includes(c1)) {
+            style.innerHTML = style.innerHTML.replace(c1, c0);
+        } else {
+            style.innerHTML = style.innerHTML + c1;
+        }
     } else if (["f", "F"].includes(event.key)) {
         videoFullScreenToggle(getVideoUnderCursor());
     } else {
