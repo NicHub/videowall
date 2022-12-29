@@ -176,22 +176,18 @@ function main() {
  * @param {Array} a items An array containing the items.
  */
 function shuffle(array) {
+    // While there are elements in the array:
+    // - Pick a random index
+    // - Decrease counter by 1
+    // - And swap the last element with it
     let counter = array.length;
-
-    // While there are elements in the array
     while (counter > 0) {
-        // Pick a random index
         const index = Math.floor(Math.random() * counter);
-
-        // Decrease counter by 1
         counter--;
-
-        // And swap the last element with it
         const temp = array[counter];
         array[counter] = array[index];
         array[index] = temp;
     }
-
     return array;
 }
 
@@ -260,7 +256,7 @@ function setVideoSrcAndPlay(_video, _src) {
     }
     _video.src = _src;
     _video.load();
-    // console.log(`Playing: ${_src}`);
+    console.info(`Playing: ${_video.src}`);
 }
 
 /**
@@ -268,13 +264,20 @@ function setVideoSrcAndPlay(_video, _src) {
  */
 function changeLayout(layout_id) {
     if (NB_VIDEOS_MAX < 2) return;
-
+    const _max = Math.floor(Math.sqrt(NB_VIDEOS_MAX));
+    const _min = 0;
     const cur_id = ALLOWED_NB_VIDEOS.indexOf(NB_VIDEOS);
     const nb_id = ALLOWED_NB_VIDEOS.length;
     let next_id;
     if (layout_id == "increase") {
+        if (cur_id == _max) {
+            return;
+        }
         next_id = (cur_id + 1) % nb_id;
     } else if (layout_id == "decrease") {
+        if (cur_id == _min) {
+            return;
+        }
         next_id = (cur_id + nb_id - 1) % nb_id;
     } else if (layout_id >= 0 && layout_id < ALLOWED_NB_VIDEOS.length) {
         next_id = layout_id;
@@ -330,6 +333,27 @@ function videoGoToTime(video, time) {
         video.pause();
     }
     video.currentTime = parseInt(time);
+}
+
+/**
+ *
+ */
+function videoOpenInSingleTabAndCopyPathToClipboard() {
+    const video = getVideoUnderCursor();
+    console.log(video.src)
+    let path = video.src.substring(7);
+    console.log(path)
+    try {
+        path = decodeURI(path);
+    } catch (e) {
+        console.error(e);
+    }
+    path = path.replace(/%23/g, "#");
+    if (window.navigator.platform in ["Win32"]) {
+        path = path.replace(/\//g, "\\");
+    }
+    updateClipboard(`"${path}"`);
+    window.open(video.src);
 }
 
 /**
@@ -437,20 +461,7 @@ function keyboardShortcutsManagement(event) {
         playlist = shuffle(playlist);
         main();
     } else if (["o", "O"].includes(event.key)) {
-        const video = getVideoUnderCursor();
-        let path = video.src.substring(7);
-        try {
-            path = decodeURI(path);
-        } catch (e) {
-            console.error(e);
-        }
-        path = path.replace(/%23/g, "#");
-        if (window.navigator.platform in ["Win32"]) {
-            path = path.replace(/\//g, "\\");
-        }
-        console.log(path);
-        updateClipboard(`"${path}"`);
-        window.open(video.src);
+        videoOpenInSingleTabAndCopyPathToClipboard();
     } else if (["Home"].includes(event.key)) {
         videoGoToTime(getVideoUnderCursor(), 0);
     } else if (["End"].includes(event.key)) {
