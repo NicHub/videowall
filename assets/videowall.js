@@ -289,7 +289,7 @@ function changeLayout(layout_id) {
 /**
  *
  */
-function videoPlayPauseAllToggle() {
+function videoPlayPauseToggleAll() {
     IS_PLAYING = !IS_PLAYING;
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
@@ -377,6 +377,22 @@ function videoFullScreenToggle(video) {
 /**
  *
  */
+function videoToggleObjectFitModeAll() {
+    const style = document.getElementById("css_generated_in_javascript");
+    const c0 = "\nvideo { object-fit: cover !important; }";
+    const c1 = "\nvideo { object-fit: contain !important; }";
+    if (style.innerHTML.includes(c0)) {
+        style.innerHTML = style.innerHTML.replace(c0, c1);
+    } else if (style.innerHTML.includes(c1)) {
+        style.innerHTML = style.innerHTML.replace(c1, c0);
+    } else {
+        style.innerHTML = style.innerHTML + c1;
+    }
+}
+
+/**
+ *
+ */
 function onDragEnd(source_id) {
     const source_vid = document.getElementById(source_id);
     const target_vid = getVideoUnderCursor();
@@ -442,22 +458,13 @@ function keyboardShortcutsManagement(event) {
     } else if (["j", "J"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), -10);
     } else if ([" ", "k", "K"].includes(event.key)) {
-        videoPlayPauseAllToggle();
+        videoPlayPauseToggleAll();
     } else if (["l", "L"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), +10);
     } else if (["m", "M"].includes(event.key)) {
         videoMuteToggle(getVideoUnderCursor());
     } else if (["r", "R"].includes(event.key)) {
-        const style = document.getElementById("css_generated_in_javascript");
-        const c0 = "\nvideo { object-fit: contain !important; }";
-        const c1 = "\nvideo { object-fit: cover !important; }";
-        if (style.innerHTML.includes(c0)) {
-            style.innerHTML = style.innerHTML.replace(c0, c1);
-        } else if (style.innerHTML.includes(c1)) {
-            style.innerHTML = style.innerHTML.replace(c1, c0);
-        } else {
-            style.innerHTML = style.innerHTML + c1;
-        }
+        videoToggleObjectFitModeAll();
     } else if (["f", "F"].includes(event.key)) {
         videoFullScreenToggle(getVideoUnderCursor());
     } else {
