@@ -256,7 +256,7 @@ function setVideoSrcAndPlay(_video, _src) {
     }
     _video.src = _src;
     _video.load();
-    console.info(`Playing: ${_video.src}`);
+    // console.info(`Playing: ${_video.src}`);
 }
 
 /**
@@ -340,9 +340,9 @@ function videoGoToTime(video, time) {
  */
 function videoOpenInSingleTabAndCopyPathToClipboard() {
     const video = getVideoUnderCursor();
-    console.log(video.src)
     let path = video.src.substring(7);
-    console.log(path)
+    // console.log(video.src);
+    // console.log(path);
     try {
         path = decodeURI(path);
     } catch (e) {
@@ -454,9 +454,17 @@ function keyboardShortcutsManagement(event) {
     } else if (!isNaN(event.key)) {
         changeLayout(parseInt(event.key));
     } else if (["ArrowRight"].includes(event.key)) {
-        nextVideoAll(1);
+        let inc = 1;
+        if (event.shiftKey) {
+            inc = Math.round(100 / NB_VIDEOS);
+        }
+        nextVideoAll(inc);
     } else if (["ArrowLeft"].includes(event.key)) {
-        nextVideoAll(-1);
+        let inc = -1;
+        if (event.shiftKey) {
+            inc = Math.round(-100 / NB_VIDEOS);
+        }
+        nextVideoAll(inc);
     } else if (["s", "S"].includes(event.key)) {
         playlist = shuffle(playlist);
         main();
