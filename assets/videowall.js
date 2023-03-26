@@ -29,7 +29,7 @@ function init() {
     const container = document.getElementById("container");
 
     // Abort if the playlist is not defined.
-    if (typeof playlist === "undefined") {
+    if (typeof PLAYLIST === "undefined") {
         container.innerHTML = `
 <p>The playlist file cannot be found!</p>
 <p>The default playlist must be in <code>./assets/playlist.js</code>.</p>
@@ -44,7 +44,7 @@ function init() {
     }
 
     // Abort if the playlist is empty.
-    if (playlist.length === 0) {
+    if (PLAYLIST.length === 0) {
         container.innerHTML = "<p>Playlist is empty. Aborting.</p>";
         return;
     }
@@ -59,7 +59,7 @@ function init() {
     VIDEO_TEMPLATE.classList.add("modified_in_javascript");
 
     // Set document title.
-    document.title = `${ORIGINAL_DOC_TITLE} | ${playlist.length} VIDEOS`;
+    document.title = `${ORIGINAL_DOC_TITLE} | ${PLAYLIST.length} VIDEOS`;
 
     // Read attributes of video template.
     V_ATTR["controls"] = VIDEO_TEMPLATE.controls;
@@ -131,7 +131,7 @@ function main() {
         // `moviepathids` is an array that contains the indexes of
         // the videos that the current player can play.
         const moviepathids = [];
-        for (let key = index; key < playlist.length; key += NB_VIDEOS) {
+        for (let key = index; key < PLAYLIST.length; key += NB_VIDEOS) {
             moviepathids.push(key);
         }
         _video.setAttribute("data-moviepathids", moviepathids);
@@ -171,7 +171,7 @@ function main() {
         };
 
         // Set video source and play.
-        setVideoSrcAndPlay(_video, playlist[index]);
+        setVideoSrcAndPlay(_video, PLAYLIST[index]);
     }
 }
 
@@ -223,7 +223,7 @@ function nextVideoSingle(_video, increment) {
     _video.setAttribute("data-moviepathid", newmoviepathid);
 
     // Set video source and play.
-    setVideoSrcAndPlay(_video, playlist[newmoviepathid]);
+    setVideoSrcAndPlay(_video, PLAYLIST[newmoviepathid]);
 }
 
 /**
@@ -426,10 +426,10 @@ function onDragEnd(source_id) {
     const target_vid = getVideoUnderCursor();
     const source_moviepathid = source_vid.getAttribute("data-moviepathid");
     const target_moviepathid = target_vid.getAttribute("data-moviepathid");
-    const source_moviepath = playlist[source_moviepathid];
-    const target_moviepath = playlist[target_moviepathid];
-    playlist[source_moviepathid] = target_moviepath;
-    playlist[target_moviepathid] = source_moviepath;
+    const source_moviepath = PLAYLIST[source_moviepathid];
+    const target_moviepath = PLAYLIST[target_moviepathid];
+    PLAYLIST[source_moviepathid] = target_moviepath;
+    PLAYLIST[target_moviepathid] = source_moviepath;
     main();
 }
 
@@ -470,7 +470,7 @@ function keyboardShortcutsManagement(event) {
         }
         nextVideoAll(inc);
     } else if (["s", "S"].includes(event.key)) {
-        playlist = shuffle(playlist);
+        PLAYLIST = shuffle(PLAYLIST);
         main();
     } else if (["o", "O"].includes(event.key)) {
         videoOpenInSingleTabAndCopyPathToClipboard();

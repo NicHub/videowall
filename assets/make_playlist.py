@@ -81,14 +81,14 @@ def make_playlist(filtered_files):
 
     # If the playlist is empty.
     if len(filtered_files) == 0:
-        playlist = "playlist = []"
+        playlist = "PLAYLIST = []"
         print("WARNING: PLAYLIST IS EMPTY !")
         return playlist
 
     # If the playlist is not empty.
     playlist = '",\n    "'.join(filtered_files)
     playlist = (
-        f'playlist = [\n    "'
+        f'PLAYLIST = [\n    "'
         f"{playlist}"
         f'"\n]\n'
     )
