@@ -31,7 +31,11 @@ function init() {
     // Abort if the playlist is not defined.
     if (typeof playlist === "undefined") {
         container.innerHTML = `
-<p>The file playlist.js cannot be found! You have to create "<code>assets/playlist.js</code>" with the following content:</p>
+<p>The playlist file cannot be found!</p>
+<p>The default playlist must be in <code>./assets/playlist_selection_1.js</code>.</p>
+<p>It is also possible to specify the URL to another playlist in the GET parameter,<br/>for example:
+<code>videowall.html?playlist=./assets/playlist_selection_1.js</code></p>
+<p>Here is a minimal playlist example:</p>
 <pre>playlist <span class="pl-k">=</span> [
     <span class="pl-s"><span class="pl-pds">"</span>../file_1.mp4<span class="pl-pds">"</span></span>,
     <span class="pl-s"><span class="pl-pds">"</span>../file_2.mp4<span class="pl-pds">"</span></span>
