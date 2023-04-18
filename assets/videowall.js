@@ -165,7 +165,9 @@ function main() {
         );
 
         // Drag and drop for reordering by user.
-        _video.draggable = false; // TODO: Drag and drop don’t work as expected yet.
+        // TODO: Drag and drop don’t work as expected yet,
+        // so _video.draggable is set to false.
+        _video.draggable = false;
         _video.ondragend = function () {
             onDragEnd(_video.id);
         };
@@ -238,7 +240,7 @@ function setVideoSrcAndPlay(_video, _src) {
     _video.addEventListener(
         "loadeddata",
         function () {
-            _video.currentTime = parseInt(_video.duration * BEGIN_AT);
+            _video.currentTime = parseFloat(_video.duration * BEGIN_AT);
             if (
                 _video.src.includes("404.mp4") ||
                 _video.src.includes("empty.mp4")
@@ -261,6 +263,9 @@ function setVideoSrcAndPlay(_video, _src) {
     _video.src = _src;
     _video.load();
     // console.info(`Playing: ${_video.src}`);
+
+    // `title` is the text displayed on hover.
+    _video.setAttribute("title", `${_video.src}`);
 }
 
 /**
@@ -336,7 +341,7 @@ function videoGoToTime(video, time) {
         time = video.duration;
         video.pause();
     }
-    video.currentTime = parseInt(time);
+    video.currentTime = parseFloat(time);
 }
 
 /**
@@ -364,7 +369,7 @@ function videoOpenInSingleTabAndCopyPathToClipboard() {
  *
  */
 function videoGoForwardOrBackward(video, dT) {
-    video.currentTime = parseInt(video.currentTime + dT);
+    video.currentTime = parseFloat(video.currentTime + dT);
 }
 
 /**
@@ -484,6 +489,10 @@ function keyboardShortcutsManagement(event) {
         videoPlayPauseToggleAll();
     } else if (["l", "L"].includes(event.key)) {
         videoGoForwardOrBackward(getVideoUnderCursor(), +10);
+    } else if ([","].includes(event.key)) {
+        videoGoForwardOrBackward(getVideoUnderCursor(), -1 / 25);
+    } else if (["."].includes(event.key)) {
+        videoGoForwardOrBackward(getVideoUnderCursor(), 1 / 25);
     } else if (["m", "M"].includes(event.key)) {
         videoMuteToggle(getVideoUnderCursor());
     } else if (["r", "R"].includes(event.key)) {
