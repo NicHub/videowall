@@ -27,7 +27,7 @@ playlist = [
 This can be done by hand or with the following python script:
 
 ```bash
-node make_playlist.py
+python3 make_playlist.py
 ```
 
 -   Double click `videowall.html` to open it in your browser.
