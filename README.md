@@ -60,5 +60,5 @@ node make_playlist.py
 -   Firefox, works but the videos may not play at start, you need to press k, ← or → .
 
 <p align="center">
-<img height=400px src="./raw/master/assets/videowall.jpg" />
+<img height=400px src="../../raw/master/assets/videowall.jpg" />
 </p>
