@@ -3,12 +3,13 @@
 ## Prerequisites
 
 -   A web browser
--   NodeJS (optional)
+-   Python3 (optional)
 
 ## Description
 
-It is a simple video wall that runs in a browser without the need for a web server. The layout can be changed. As browsers do not have access to the file system, the list of video files must be generated in a Javascript file called `playlist.js`.
-
+This is a simple video wall that runs in a browser without the need for a web server.
+The layout can be changed.
+As browsers do not have access to the file system, the list of video files must be generated in a Javascript file called `playlist.js`.
 It is especially useful to watch several videos one after the other with the 1×1 layout.
 
 ## playlist.js format
@@ -22,7 +23,8 @@ playlist = [
 
 ## Usage
 
--   Generate the playlist.js file that will contain the path to the videos. This can be done by hand or with the following python script:
+-   Generate the playlist.js file that will contain the path to the videos.
+This can be done by hand or with the following python script:
 
 ```bash
 node make_playlist.py
