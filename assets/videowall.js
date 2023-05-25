@@ -375,6 +375,25 @@ function videoGoForwardOrBackward(video, dT) {
 /**
  *
  */
+function videoSetPlaybackRate(video, dT) {
+    const newPlaybackRate = parseFloat(video.playbackRate + dT);
+    try {
+        video.playbackRate = newPlaybackRate;
+        console.info(
+            `document.querySelector("#${
+                video.id
+            }").playbackRate = ${video.playbackRate.toFixed(3)};`
+        );
+    } catch {
+        console.error(
+            `Playback rate of ${newPlaybackRate} is not in the supported playback range.`
+        );
+    }
+}
+
+/**
+ *
+ */
 function videoMuteToggle(video) {
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
@@ -499,6 +518,10 @@ function keyboardShortcutsManagement(event) {
         videoToggleObjectFitModeAll();
     } else if (["f", "F"].includes(event.key)) {
         videoFullScreenToggle(getVideoUnderCursor());
+    } else if (["+"].includes(event.key)) {
+        videoSetPlaybackRate(getVideoUnderCursor(), +0.1);
+    } else if (["-"].includes(event.key)) {
+        videoSetPlaybackRate(getVideoUnderCursor(), -0.1);
     } else {
         return;
     }
