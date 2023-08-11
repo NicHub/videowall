@@ -4,18 +4,23 @@ const ORIGINAL_DOC_TITLE = document.title;
 const BEGIN_AT = STARTUP_DEFAULTS["BEGIN_AT"];
 const NB_VIDEOS_MAX = STARTUP_DEFAULTS["NB_VIDEOS_MAX"];
 const WHEEL_EVENT_DELAY = 200;
-var V_ATTR = {
+let V_ATTR = {
     controls: undefined,
     autoplay: undefined,
     muted: undefined,
 };
-var IS_PLAYING = undefined;
-var ALLOWED_NB_VIDEOS = [];
-var ALL_VIDEOS = [];
-var VIDEO_TEMPLATE = document.getElementById("v0");
-var MOVIE_ORDERS = [];
-var NB_VIDEOS = STARTUP_DEFAULTS["NB_VIDEOS"];
-var PREVIOUS_WHEEL_TIME = 0;
+let IS_PLAYING = undefined;
+let ALLOWED_NB_VIDEOS = [];
+let ALL_VIDEOS = [];
+let VIDEO_TEMPLATE = document.getElementById("v0");
+let MOVIE_ORDERS = [];
+let NB_VIDEOS = STARTUP_DEFAULTS["NB_VIDEOS"];
+let PREVIOUS_WHEEL_TIME = 0;
+const PLAYBACK_SPEED_OVERLAY = document.getElementById(
+    "playback_speed_overlay"
+);
+const POSSIBLE_PLAYBACK_RATES = [0, 0.1, 0.5, 1, 1.5, 2, 5, 10, 16];
+let CURRENT_PLAYBACK_RATE_ID = 3;
 
 /**
  * Start
@@ -83,10 +88,44 @@ function init() {
     // Key listener attached to the <body> element.
     document
         .getElementsByTagName("body")[0]
-        .addEventListener("keyup", keyboardShortcutsManagement);
+        .addEventListener("keyup", keyboardShortcutHandler);
+
+    // Help browsers to hide the mouse cursor.
+    forceCursorHide();
 
     // Let’s begin the serious stuff.
     main();
+}
+
+/**
+ *
+ */
+function forceCursorHide() {
+    let cursorTimeout;
+
+    function hideCursor() {
+        document.body.style.cursor = "none";
+    }
+
+    function resetCursorTimeout() {
+        clearTimeout(cursorTimeout);
+        cursorTimeout = setTimeout(hideCursor, 500);
+    }
+
+    document.addEventListener("mousemove", () => {
+        document.body.style.cursor = "default";
+        resetCursorTimeout();
+    });
+
+    document.addEventListener("keydown", () => {
+        document.body.style.cursor = "default";
+        resetCursorTimeout();
+    });
+
+    resetCursorTimeout();
+
+    document.addEventListener("click", resetCursorTimeout);
+    document.addEventListener("scroll", resetCursorTimeout);
 }
 
 /**
@@ -114,6 +153,9 @@ function main() {
     for (let index = 1; index < NB_VIDEOS; index++) {
         let _video = VIDEO_TEMPLATE.cloneNode(true);
         _video.id = "v" + index;
+        _video.addEventListener("keydown", function (event) {
+            preventDefault(event);
+        });
         if (V_ATTR["muted"]) _video.muted = true; // Needed because FF doesn’t duplicate the mute attribute.
         VIDEO_TEMPLATE.parentNode.insertBefore(_video, last_video.nextSibling);
         last_video = _video;
@@ -174,7 +216,20 @@ function main() {
 
         // Set video source and play.
         setVideoSrcAndPlay(_video, PLAYLIST[index]);
+
+        // Ensure that the playback speed is
+        // maintained when the layout is changed.
+        videoSetPlaybackRateAll(0);
     }
+}
+
+/**
+ * Prevent default browser behaviours for some event keys.
+ */
+const KEYS_PREVENTDEFAULT = ["ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft"];
+function preventDefault(event) {
+    if (!KEYS_PREVENTDEFAULT.includes(event.key)) return;
+    event.preventDefault();
 }
 
 /**
@@ -211,6 +266,7 @@ function nextVideoAll(increment) {
  * Play next or previous video. Applies to chosen video only.
  */
 function nextVideoSingle(_video, increment) {
+    if (!(_video instanceof HTMLVideoElement)) return;
     // Get and Set movie metadata.
     let moviepathidskey = parseInt(_video.getAttribute("data-moviepathidskey"));
     const moviepathids = _video.getAttribute("data-moviepathids").split(",");
@@ -232,15 +288,24 @@ function nextVideoSingle(_video, increment) {
  *
  */
 function setVideoSrcAndPlay(_video, _src) {
+    if (!(_video instanceof HTMLVideoElement)) return;
     _video.addEventListener("error", function () {
         console.error(`Error: ${_src}`);
         _video.src = "./assets/404.mp4";
     });
 
     _video.addEventListener(
+        "loadedmetadata",
+        function () {
+            videoChangeObjectFitMode(_video, "auto");
+        },
+        false
+    );
+
+    _video.addEventListener(
         "loadeddata",
         function () {
-            _video.currentTime = parseFloat(_video.duration * BEGIN_AT);
+            videoGoToRelativeTime(_video, BEGIN_AT);
             if (
                 _video.src.includes("404.mp4") ||
                 _video.src.includes("empty.mp4")
@@ -262,16 +327,18 @@ function setVideoSrcAndPlay(_video, _src) {
     }
     _video.src = _src;
     _video.load();
-    // console.info(`Playing: ${_video.src}`);
 
-    // `title` is the text displayed on hover.
-    _video.setAttribute("title", `${_video.src}`);
+    console.info(`Playing: ${_video.src}`);
+
+    // `title` is the tooltip text displayed on hover.
+    // _video.setAttribute("title", `VIDEO\n${_video.src}`);
 }
 
 /**
  *
  */
 function changeLayout(layout_id) {
+    console.log(`layout_id = ${layout_id}`);
     if (NB_VIDEOS_MAX < 2) return;
     const _max = Math.floor(Math.sqrt(NB_VIDEOS_MAX));
     const _min = 0;
@@ -315,8 +382,9 @@ function videoPlayPauseToggleAll() {
 /**
  *
  */
-function videoPause(video) {
-    const play_promise = video.pause();
+function videoPause(_video) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    const play_promise = _video.pause();
     if (play_promise !== undefined) {
         play_promise.catch((_) => {});
     }
@@ -327,31 +395,51 @@ function videoPause(video) {
  */
 function getVideoUnderCursor() {
     let _video = document.querySelector("video:hover");
-    if (_video === void 0) {
-        _video = false;
+    if (!(_video instanceof HTMLVideoElement)) {
+        _video === void 0;
     }
     return _video;
 }
 
 /**
- * To go to the end, set time = -1
+ * 0.0 ≤ relativeTime ≤ 1.0
  */
-function videoGoToTime(video, time) {
-    if (time === -1) {
-        time = video.duration;
-        video.pause();
+function videoGoToRelativeTime(_video, relativeTime) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    if (isNaN(relativeTime)) return;
+    relativeTime = parseFloat(relativeTime);
+    if (relativeTime < 0) return;
+    if (relativeTime > 1) return;
+    if (relativeTime === 1) {
+        _video.pause();
     }
-    video.currentTime = parseFloat(time);
+    const absoluteTime = _video.duration * relativeTime;
+    _video.currentTime = absoluteTime;
+}
+
+/**
+ * if absTime < 0 => time is measured from the end.
+ */
+function videoGoToAbsoluteTime(_video, absoluteTime) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    if (isNaN(absoluteTime)) return;
+    absoluteTime = parseFloat(absoluteTime);
+    if (Math.abs(absoluteTime) > _video.duration) return;
+    if (absoluteTime < 0) absoluteTime += _video.duration;
+    if (absoluteTime === _video.duration) {
+        _video.pause();
+    }
+    _video.currentTime = absoluteTime;
 }
 
 /**
  *
  */
-function videoOpenInSingleTabAndCopyPathToClipboard() {
-    const video = getVideoUnderCursor();
-    let path = video.src.substring(7);
-    // console.log(video.src);
-    // console.log(path);
+function videoOpenInSingleTabAndCopyPathToClipboard(_video) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    let path = _video.src.replace("file://", "");
+    console.log(_video.src);
+    console.log(path);
     try {
         path = decodeURI(path);
     } catch (e) {
@@ -361,46 +449,80 @@ function videoOpenInSingleTabAndCopyPathToClipboard() {
     if (window.navigator.platform in ["Win32"]) {
         path = path.replace(/\//g, "\\");
     }
-    updateClipboard(`"${path}"`);
-    window.open(video.src);
+    copyInClipboard(`"${path}"`, function () {
+        window.open(_video.src);
+    });
 }
 
 /**
  *
  */
-function videoGoForwardOrBackward(video, dT) {
-    video.currentTime = parseFloat(video.currentTime + dT);
+function videoGoForwardOrBackward(_video, dT) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    _video.currentTime = parseFloat(_video.currentTime + dT);
 }
 
 /**
  *
  */
-function videoSetPlaybackRate(video, dT) {
-    const newPlaybackRate = parseFloat(video.playbackRate + dT);
+function videoSetPlaybackRate(_video, increment) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    if (parseInt(increment) !== increment) return;
+    const new_rate_id = CURRENT_PLAYBACK_RATE_ID + increment;
+    if (new_rate_id > POSSIBLE_PLAYBACK_RATES.length - 1) return;
+    if (new_rate_id < 0) return;
+
+    CURRENT_PLAYBACK_RATE_ID = new_rate_id;
     try {
-        video.playbackRate = newPlaybackRate;
+        _video.playbackRate = POSSIBLE_PLAYBACK_RATES[CURRENT_PLAYBACK_RATE_ID];
+    } catch (err) {
         console.info(
-            `document.querySelector("#${
-                video.id
-            }").playbackRate = ${video.playbackRate.toFixed(3)};`
+            `Playback rate of ${POSSIBLE_PLAYBACK_RATES[CURRENT_PLAYBACK_RATE_ID]} is not in the supported playback range.\n${err}`
         );
-    } catch {
-        console.error(
-            `Playback rate of ${newPlaybackRate} is not in the supported playback range.`
-        );
+        return;
+    }
+    PLAYBACK_SPEED_OVERLAY.style.top = `${
+        _video.getBoundingClientRect()["top"] + 10
+    }px`;
+    PLAYBACK_SPEED_OVERLAY.style.left = `${
+        _video.getBoundingClientRect()["left"] + 10
+    }px`;
+    const nb_digits = _video.playbackRate < 2 ? 1 : 0;
+    PLAYBACK_SPEED_OVERLAY.innerHTML = `<p>${_video.playbackRate.toFixed(
+        nb_digits
+    )}<span style="font-family:sans-serif;">&thinsp;</span>×</p>`;
+    PLAYBACK_SPEED_OVERLAY.classList.add("display-flex");
+    PLAYBACK_SPEED_OVERLAY.classList.remove("display-none");
+    if (_video.playbackRate === 1) {
+        setTimeout(function () {
+            PLAYBACK_SPEED_OVERLAY.classList.remove("display-flex");
+            PLAYBACK_SPEED_OVERLAY.classList.add("display-none");
+        }, 500);
     }
 }
 
 /**
  *
  */
-function videoMuteToggle(video) {
-    for (let index = 0; index < NB_VIDEOS; index++) {
+function videoSetPlaybackRateAll(increment) {
+    for (let index = NB_VIDEOS - 1; index >= 0; index--) {
         const _video = ALL_VIDEOS[index];
-        if (_video.id === video.id) {
-            video.muted = !video.muted;
+        videoSetPlaybackRate(_video, increment);
+        increment = 0;
+    }
+}
+
+/**
+ *
+ */
+function videoMuteToggle(_video) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    for (let index = 0; index < NB_VIDEOS; index++) {
+        const cur_video = ALL_VIDEOS[index];
+        if (cur_video.id === _video.id) {
+            _video.muted = !_video.muted;
         } else {
-            _video.muted = true;
+            cur_video.muted = true;
         }
     }
 }
@@ -408,37 +530,56 @@ function videoMuteToggle(video) {
 /**
  *
  */
-function videoFullScreenToggle(video) {
+function videoFullScreenToggle(_video) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    for (let index = 0; index < NB_VIDEOS; index++) {
+        const cur_video = ALL_VIDEOS[index];
+        if (cur_video.id !== _video.id) {
+            videoPause(cur_video);
+        }
+    }
+    if (_video.requestFullscreen) {
+        _video.requestFullscreen();
+    } else if (_video.mozRequestFullScreen) {
+        _video.mozRequestFullScreen();
+    } else if (_video.webkitRequestFullscreen) {
+        _video.webkitRequestFullscreen();
+    } else if (_video.msRequestFullscreen) {
+        _video.msRequestFullscreen();
+    }
+}
+
+/**
+ *
+ */
+function videoChangeObjectFitMode(_video, mode) {
+    if (!(_video instanceof HTMLVideoElement)) return;
+    if (mode === "cover") {
+        _video.classList.remove("object-fit-contain");
+        _video.classList.add("object-fit-cover");
+    } else if (mode === "contain") {
+        _video.classList.remove("object-fit-cover");
+        _video.classList.add("object-fit-contain");
+    } else if (mode === "toggle") {
+        if (_video.classList.contains("object-fit-cover"))
+            videoChangeObjectFitMode(_video, "contain");
+        else if (_video.classList.contains("object-fit-contain"))
+            videoChangeObjectFitMode(_video, "cover");
+        else videoChangeObjectFitMode(_video, "cover");
+    } else if (mode === "auto") {
+        if (_video.videoWidth < _video.videoHeight)
+            videoChangeObjectFitMode(_video, "contain");
+        else videoChangeObjectFitMode(_video, "cover");
+    }
+}
+
+/**
+ *
+ */
+function videoChangeObjectFitModeAll(mode) {
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
-        if (_video.id !== video.id) {
-            videoPause(_video);
-        }
-    }
-    if (video.requestFullscreen) {
-        video.requestFullscreen();
-    } else if (video.mozRequestFullScreen) {
-        video.mozRequestFullScreen();
-    } else if (video.webkitRequestFullscreen) {
-        video.webkitRequestFullscreen();
-    } else if (video.msRequestFullscreen) {
-        video.msRequestFullscreen();
-    }
-}
-
-/**
- *
- */
-function videoToggleObjectFitModeAll() {
-    const style = document.getElementById("css_generated_in_javascript");
-    const c0 = "\nvideo { object-fit: cover !important; }";
-    const c1 = "\nvideo { object-fit: contain !important; }";
-    if (style.innerHTML.includes(c0)) {
-        style.innerHTML = style.innerHTML.replace(c0, c1);
-    } else if (style.innerHTML.includes(c1)) {
-        style.innerHTML = style.innerHTML.replace(c1, c0);
-    } else {
-        style.innerHTML = style.innerHTML + c1;
+        videoChangeObjectFitMode(_video, mode);
     }
 }
 
@@ -460,68 +601,118 @@ function onDragEnd(source_id) {
 /**
  *
  */
-function updateClipboard(newClip) {
-    navigator.clipboard.writeText(newClip).then(
-        function () {
-            // Clipboard successfully set.
-        },
-        function () {
-            // Clipboard write failed.
-        }
-    );
+function copyInClipboard(_text, callback) {
+    navigator.clipboard
+        .writeText(_text)
+        .then(function () {
+            if (callback) {
+                callback();
+            }
+        })
+        .catch(function (err) {
+            console.error("Clipboard write failed!", err);
+        });
 }
 
 /**
- *
+ * Keyboard shortcuts inspired from YouTube
+ * https://support.google.com/youtube/answer/7631406
  */
-function keyboardShortcutsManagement(event) {
+function keyboardShortcutHandler(event) {
+    // console.log("");
+    // console.log(event);
+    // console.log(event.key);
+    // console.log(!isNaN(parseInt(event.key)));
+    // console.log(parseInt(event.key));
+    // console.log(parseFloat(event.key));
+    // console.log(parseFloat(event.keyCode));
+
+    preventDefault(event);
+    const repeat = event.repeat;
+    if (repeat) {
+        return;
+    }
     if (["ArrowUp"].includes(event.key)) {
+        // -   <kbd>↑</kbd> Increase layout density.
         changeLayout("increase");
     } else if (["ArrowDown"].includes(event.key)) {
+        // -   <kbd>↓</kbd> Decrease layout density.
         changeLayout("decrease");
-    } else if (!isNaN(event.key)) {
-        changeLayout(parseInt(event.key));
+    } else if (event.keyCode >= 48 && event.keyCode <= 57) {
+        // -   <kbd>Shift+0..9</kbd> Change player layout.
+        if (event.shiftKey) changeLayout(event.keyCode - 48);
+        // -   <kbd>0..9</kbd> Go to relative time for track under the mouse cursor.
+        else videoGoToRelativeTime(getVideoUnderCursor(), event.key / 10);
+    } else if (["§"].includes(event.key)) {
+        // -   <kbd>§</kbd> Go to the end for track under cursor.
+        videoGoToRelativeTime(getVideoUnderCursor(), 1);
     } else if (["ArrowRight"].includes(event.key)) {
-        let inc = 1;
-        if (event.shiftKey) {
-            inc = Math.round(100 / NB_VIDEOS);
-        }
-        nextVideoAll(inc);
+        // -   <kbd>Shift+Alt+→</kbd> Moves 100 tracks forward in the playlist.
+        if (event.shiftKey && event.altKey)
+            nextVideoAll(Math.round(100 / NB_VIDEOS));
+        // -   <kbd>Alt+→</kbd> Moves 10 tracks forward in the playlist.
+        else if (event.altKey) nextVideoAll(Math.round(10 / NB_VIDEOS));
+        // -   <kbd>Shift+→</kbd> Moves 1 track forward in the playlist.
+        else if (event.shiftKey) nextVideoAll(1);
+        // -   <kbd>→</kbd> Seek forward 5 seconds for track under the mouse cursor.
+        else videoGoForwardOrBackward(getVideoUnderCursor(), +5);
     } else if (["ArrowLeft"].includes(event.key)) {
-        let inc = -1;
-        if (event.shiftKey) {
-            inc = Math.round(-100 / NB_VIDEOS);
-        }
-        nextVideoAll(inc);
+        // -   <kbd>Shift+Alt+→</kbd> Moves 100 tracks backward in the playlist.
+        if (event.shiftKey && event.altKey)
+            nextVideoAll(Math.round(-100 / NB_VIDEOS));
+        // -   <kbd>Alt+→</kbd> Moves 10 tracks backward in the playlist.
+        else if (event.altKey) nextVideoAll(Math.round(-10 / NB_VIDEOS));
+        // -   <kbd>Shift+→</kbd> Moves 1 track backward in the playlist.
+        else if (event.shiftKey) nextVideoAll(-1);
+        // -   <kbd>→</kbd> Seek backward 5 seconds for track under the mouse cursor.
+        else videoGoForwardOrBackward(getVideoUnderCursor(), -5);
     } else if (["s", "S"].includes(event.key)) {
+        // -   <kbd>s</kbd> Shuffle the order of the playlist.
         PLAYLIST = shuffle(PLAYLIST);
         main();
-    } else if (["o", "O"].includes(event.key)) {
-        videoOpenInSingleTabAndCopyPathToClipboard();
+    } else if (["i", "I"].includes(event.key)) {
+        // -   <kbd>i</kbd> Open the track under the mouse cursor in another tab and copy the URL in the clipboard.
+        videoOpenInSingleTabAndCopyPathToClipboard(getVideoUnderCursor());
     } else if (["Home"].includes(event.key)) {
-        videoGoToTime(getVideoUnderCursor(), 0);
+        // -   <kbd>Home</kbd> Seek to the beginning of the video.
+        videoGoToRelativeTime(getVideoUnderCursor(), 0);
     } else if (["End"].includes(event.key)) {
-        videoGoToTime(getVideoUnderCursor(), -1);
+        // -   <kbd>End</kbd> Seek to the last seconds of the video.
+        videoGoToAbsoluteTime(getVideoUnderCursor(), -2);
     } else if (["j", "J"].includes(event.key)) {
+        // -   <kbd>j</kbd> Seek backward 10 seconds in track under the mouse cursor.
         videoGoForwardOrBackward(getVideoUnderCursor(), -10);
     } else if ([" ", "k", "K"].includes(event.key)) {
+        // -   <kbd>k</kbd> Toggle play and pause in all players.
         videoPlayPauseToggleAll();
     } else if (["l", "L"].includes(event.key)) {
+        // -   <kbd>l</kbd> Seek forward 10 seconds in track under the mouse cursor.
         videoGoForwardOrBackward(getVideoUnderCursor(), +10);
     } else if ([","].includes(event.key)) {
+        // -   <kbd>,</kbd> Skip to the next frame.
         videoGoForwardOrBackward(getVideoUnderCursor(), -1 / 25);
     } else if (["."].includes(event.key)) {
+        // -   <kbd>.</kbd> Skip to the previous frame.
         videoGoForwardOrBackward(getVideoUnderCursor(), 1 / 25);
     } else if (["m", "M"].includes(event.key)) {
+        // -   <kbd>m</kbd> Mute / unmute the track under the mouse cursor.
         videoMuteToggle(getVideoUnderCursor());
     } else if (["r", "R"].includes(event.key)) {
-        videoToggleObjectFitModeAll();
+        // -   <kbd>r</kbd> Toggle video object fit mode between “cover” mode and “contain” mode for all videos.
+        videoChangeObjectFitModeAll("toggle");
     } else if (["f", "F"].includes(event.key)) {
+        // -   <kbd>f</kbd> Full screen the video under the mouse cursor.
         videoFullScreenToggle(getVideoUnderCursor());
-    } else if (["+"].includes(event.key)) {
-        videoSetPlaybackRate(getVideoUnderCursor(), +0.1);
-    } else if (["-"].includes(event.key)) {
-        videoSetPlaybackRate(getVideoUnderCursor(), -0.1);
+    } else if ([">"].includes(event.key)) {
+        // -   <kbd>></kbd> Speed up the track playback rate.
+        videoSetPlaybackRateAll(+1);
+    } else if (["<"].includes(event.key)) {
+        // -   <kbd><</kbd> Slow down the track playback rate.
+        videoSetPlaybackRateAll(-1);
+    } else if (["?"].includes(event.key)) {
+        // -   <kbd>?</kbd> Open help file.
+        const helpFileURL = "./assets/videowall.js";
+        window.open(helpFileURL);
     } else {
         return;
     }

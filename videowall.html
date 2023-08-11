@@ -2,11 +2,11 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>VIDEO WALL</title>
-    <link rel="shortcut icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="./assets/favicon.ico">
     <style>
         body {
             margin: 0;
@@ -24,19 +24,56 @@
             font-weight: 900;
         }
 
+        #container {
+            position: relative;
+        }
+
         video {
             float: left;
             margin: 0;
             padding: 0;
             display: table;
             object-fit: cover;
-            /*
-            object-fit: contain;
-            */
+            z-index: 0;
         }
 
         video:focus {
             outline: none;
+        }
+
+        div#playback_speed_overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50px;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            color: chartreuse;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .display-none {
+            display: none;
+        }
+
+        .display-flex {
+            display: flex;
+        }
+
+        /*
+        "object-fit" set by JS to "contain"
+        if video is in portrait mode and to
+        "cover" otherwise.
+        */
+        .object-fit-cover {
+            object-fit: cover;
+        }
+
+        .object-fit-contain {
+            object-fit: contain;
         }
     </style>
 </head>
@@ -47,6 +84,7 @@
         <video id="v0" src="./assets/empty.mp4" controls muted autoplay>
             <p>VIDEO WALL</p>
         </video>
+        <div id="playback_speed_overlay" class="display-none"></div>
     </div>
 
     <script>
@@ -63,7 +101,6 @@
         if (playlistURL === null) {
             playlistURL = "./assets/playlist.js";
         }
-        console.log(playlistURL);
 
         const loadScript = (FILE_URL, async = false, type = "text/javascript") => {
             return new Promise((resolve, reject) => {
@@ -104,16 +141,16 @@
 
 
         /**
-         * Startup defaults, can change at runtime.
-           They can also be declared in the playlist.
-           Here is an example:
-
-           STARTUP_DEFAULTS = {
-               BEGIN_AT: 0, // Time offset when starting to play. Given in fraction of total time.
-               NB_VIDEOS_MAX: 6 ** 2, // Can take the value 2 or any perfect square number (1, 4, 9, 16,...).
-               NB_VIDEOS: 4,
-           };
-
+         * Startup defaults.
+         *  They can change at runtime.
+         *  They can also be declared in the playlist.
+         *  Here is an example:
+         *
+         *  STARTUP_DEFAULTS = {
+         *      BEGIN_AT: 0, // Time offset when starting to play. Given in fraction of total time.
+         *      NB_VIDEOS_MAX: 6 ** 2, // Can take the value 2 or any perfect square number (1, 4, 9, 16,...).
+         *      NB_VIDEOS: 4,
+         *  };
          */
         if (typeof (STARTUP_DEFAULTS) === "undefined") { var STARTUP_DEFAULTS = {}; }
         if (typeof (STARTUP_DEFAULTS["BEGIN_AT"]) === "undefined") { STARTUP_DEFAULTS["BEGIN_AT"] = 1 / 4; }

@@ -12,7 +12,7 @@ EXTENSIONS = ("mp4", "webm", "m4v")
 # If EXCLUDES contains only one element, this
 # element must be followed by a comma,
 # otherwise Python treats the tuple as a string.
-EXCLUDES = ("novideowall", )
+EXCLUDES = ("novideowall",)
 
 PATHNAME = os.path.realpath(os.path.dirname(__file__))
 os.chdir(PATHNAME)
@@ -21,7 +21,7 @@ PLAYLIST_FILE_NAME = "playlist.js"
 
 
 def list_files(path_to_walk):
-    """ ___ """
+    """___"""
 
     filtered_files = []
     hidden_files = []
@@ -29,9 +29,7 @@ def list_files(path_to_walk):
     excluded_files = []
 
     for root, _, files in os.walk(path_to_walk):
-
         for file in files:
-
             # Make path name relative to this script.
             file_name = os.path.join(root, file)
 
@@ -42,8 +40,7 @@ def list_files(path_to_walk):
 
             # Test if file extension is OK.
             if len(EXTENSIONS) > 0 and not file_name.endswith(EXTENSIONS):
-                non_supported_extension_files.append(
-                    os.path.abspath(file_name))
+                non_supported_extension_files.append(os.path.abspath(file_name))
                 continue
 
             # Test if exclude string found.
@@ -71,13 +68,13 @@ def list_files(path_to_walk):
         "filtered_files": filtered_files,
         "hidden_files": hidden_files,
         "non_supported_extension_files": non_supported_extension_files,
-        "excluded_files": excluded_files
+        "excluded_files": excluded_files,
     }
     return files
 
 
 def make_playlist(filtered_files):
-    """ ___ """
+    """___"""
 
     # If the playlist is empty.
     if len(filtered_files) == 0:
@@ -87,17 +84,13 @@ def make_playlist(filtered_files):
 
     # If the playlist is not empty.
     playlist = '",\n    "'.join(filtered_files)
-    playlist = (
-        f'PLAYLIST = [\n    "'
-        f"{playlist}"
-        f'"\n]\n'
-    )
+    playlist = f'PLAYLIST = [\n    "' f"{playlist}" f'"\n]\n'
     print(f"CREATING PLAYLIST WITH {len(filtered_files)} MOVIES.")
     return playlist
 
 
 def save_playlist(playlist, file_name):
-    """ ___ """
+    """___"""
 
     f = open(file_name, "w")
     f.write(playlist)
@@ -106,7 +99,7 @@ def save_playlist(playlist, file_name):
 
 
 def report_alien_files(files):
-    """ ___ """
+    """___"""
 
     # Print the list of hidden files.
     if len(files["hidden_files"]) > 0:
@@ -116,20 +109,25 @@ def report_alien_files(files):
 
     # Print the list of files with non supported extentions.
     if len(files["non_supported_extension_files"]) > 0:
-        print(f'\n{len(files["non_supported_extension_files"])} FILE(S)'
-              'WITH NON SUPPORTED EXTENSION FOUND:')
+        print(
+            f'\n{len(files["non_supported_extension_files"])} FILE(S)'
+            "WITH NON SUPPORTED EXTENSION FOUND:"
+        )
         print('"' + '"\n"'.join(files["non_supported_extension_files"]) + '"')
 
     # Print the list of files with excludes.
     if len(files["excluded_files"]) > 0:
-        print(
-            f'\n{len(files["excluded_files"])} FILE(S) WITH EXCLUDE STRING FOUND:')
+        print(f'\n{len(files["excluded_files"])} FILE(S) WITH EXCLUDE STRING FOUND:')
         print('"' + '"\n"'.join(files["excluded_files"]) + '"')
 
 
-if __name__ == "__main__":
-
+def main():
+    """___"""
     files = list_files(PATH_TO_WALK)
     playlist = make_playlist(files["filtered_files"])
     save_playlist(playlist, PLAYLIST_FILE_NAME)
     report_alien_files(files)
+
+
+if __name__ == "__main__":
+    main()
