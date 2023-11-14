@@ -666,6 +666,12 @@ function keyboardShortcutHandler(event) {
         else if (event.shiftKey) nextVideoAll(-1);
         // -   <kbd>→</kbd> Seek backward 5 seconds for track under the mouse cursor.
         else videoGoForwardOrBackward(getVideoUnderCursor(), -5);
+    } else if (["y", "Y"].includes(event.key)) {
+        // -   <kbd>y</kbd> Moves 1 track backward in the playlist.
+        nextVideoAll(-1);
+    } else if (["x", "X"].includes(event.key)) {
+        // -   <kbd>x</kbd> Moves 1 track forward in the playlist.
+        nextVideoAll(1);
     } else if (["s", "S"].includes(event.key)) {
         // -   <kbd>s</kbd> Shuffle the order of the playlist.
         PLAYLIST = shuffle(PLAYLIST);
