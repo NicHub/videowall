@@ -101,6 +101,16 @@ def save_playlist(playlist, file_name):
 def report_alien_files(files):
     """___"""
 
+    """
+    Avoid automatic `.DS_Store` creation :
+
+    defaults write com.apple.desktopservices DSDontWriteNetworkStores true
+    defaults write com.apple.desktopservices DSDontWriteUSBStores true
+
+    defaults read com.apple.desktopservices DSDontWriteNetworkStores
+    defaults read com.apple.desktopservices DSDontWriteUSBStores
+    """
+
     # Print the list of hidden files.
     if len(files["hidden_files"]) > 0:
         msg = '" \\\n   "'.join(files["hidden_files"])
