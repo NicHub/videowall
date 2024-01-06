@@ -20,7 +20,6 @@
             text-anchor: middle;
             fill-opacity: 1;
             fill: white;
-            stroke: white;
             font-family: 'Big Caslon';
             line-height:1.25;
             /*dominant-baseline: central; */ /* Works in Firefox only */
@@ -28,12 +27,10 @@
     </style>
     <g>
         <rect width="100%" height="100%" fill="black"/>
-
         <text
             x="640"
             y="250"
             >🤭</text>
-
         <text
             x="585"
             y="400"
