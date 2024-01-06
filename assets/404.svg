@@ -20,6 +20,7 @@
             text-anchor: middle;
             fill-opacity: 1;
             fill: white;
+            stroke: white;
             font-family: 'Big Caslon';
             line-height:1.25;
             /*dominant-baseline: central; */ /* Works in Firefox only */

@@ -12,3 +12,5 @@
 cd -- "$(dirname "$0")"
 
 /usr/bin/env python3 ./make_playlist.py
+
+kill -s INT $$
