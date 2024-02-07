@@ -7,6 +7,9 @@ import urllib.parse
 # If EXTENSIONS is empty, this test is skipped.
 EXTENSIONS = ("mp4", "webm", "m4v")
 
+# Files with this extensions are ignored.
+IGNORED_EXTENSIONS = (".jpg", ".jpeg", ".html")
+
 # The file name must not contain one of EXCLUDES.
 # If EXCLUDES is empty, this test is skipped.
 # If EXCLUDES contains only one element, this
@@ -38,8 +41,12 @@ def list_files(path_to_walk):
                 hidden_files.append(os.path.abspath(file_name))
                 continue
 
+            # Test if file extension must be ignored.
+            if len(IGNORED_EXTENSIONS) > 0 and file_name.lower().endswith(IGNORED_EXTENSIONS):
+                continue
+
             # Test if file extension is OK.
-            if len(EXTENSIONS) > 0 and not file_name.endswith(EXTENSIONS):
+            if len(EXTENSIONS) > 0 and not file_name.lower().endswith(EXTENSIONS):
                 non_supported_extension_files.append(os.path.abspath(file_name))
                 continue
 
