@@ -18,7 +18,8 @@ IGNORED_EXTENSIONS = (".jpg", ".jpeg", ".html")
 # otherwise Python treats the tuple as a string.
 EXCLUDES = ("novideowall",)
 
-PLAYLIST_FILE_NAME = "playlist.js"
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+PLAYLIST_FILE_NAME = f"{SCRIPT_PATH}{os.path.sep}playlist.js"
 
 
 def list_files(path_to_walk):
