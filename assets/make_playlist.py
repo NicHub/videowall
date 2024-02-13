@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import urllib.parse
 
 # The file name must end with one of EXTENSIONS.
@@ -17,9 +18,6 @@ IGNORED_EXTENSIONS = (".jpg", ".jpeg", ".html")
 # otherwise Python treats the tuple as a string.
 EXCLUDES = ("novideowall",)
 
-PATHNAME = os.path.realpath(os.path.dirname(__file__))
-os.chdir(PATHNAME)
-PATH_TO_WALK = "../../videos/"
 PLAYLIST_FILE_NAME = "playlist.js"
 
 
@@ -42,7 +40,9 @@ def list_files(path_to_walk):
                 continue
 
             # Test if file extension must be ignored.
-            if len(IGNORED_EXTENSIONS) > 0 and file_name.lower().endswith(IGNORED_EXTENSIONS):
+            if len(IGNORED_EXTENSIONS) > 0 and file_name.lower().endswith(
+                IGNORED_EXTENSIONS
+            ):
                 continue
 
             # Test if file extension is OK.
@@ -138,13 +138,22 @@ def report_alien_files(files):
         print('"' + '"\n"'.join(files["excluded_files"]) + '"')
 
 
-def main():
+def sanity_checks(target_directory):
+    # Vérifie que le répertoire existe
+    if not os.path.exists(target_directory) or not os.path.isdir(target_directory):
+        print(f"Le répertoire n’existe pas : {target_directory}")
+        sys.exit(1)
+
+
+def main(target_directory=None):
     """___"""
-    files = list_files(PATH_TO_WALK)
+    sanity_checks(target_directory)
+    files = list_files(target_directory)
     playlist = make_playlist(files["filtered_files"])
     save_playlist(playlist, PLAYLIST_FILE_NAME)
     report_alien_files(files)
 
 
 if __name__ == "__main__":
-    main()
+    target_directory = sys.argv[1] if len(sys.argv) > 1 else "../../videos/"
+    main(target_directory)

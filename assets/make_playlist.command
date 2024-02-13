@@ -5,13 +5,13 @@ import os
 import signal
 import sys
 
-sys.path.append(".")
+
 import make_playlist as mp
 import make_movie_thumbnails as mt
 
 
 def main():
-    mp.main()
+    mp.main("../../videos/")
     mt.main("../../videos/")
 
 
@@ -24,24 +24,8 @@ def gracefull_KeyboardInterrupt():
 
 
 if __name__ == "__main__":
+    PATHNAME = os.path.realpath(os.path.dirname(__file__))
+    os.chdir(PATHNAME)
     gracefull_KeyboardInterrupt()
     main()
     os.kill(os.getpid(), signal.SIGINT)
-
-
-# #!/usr/bin/env bash
-
-# # Usage:
-# # chmod a+x make_playlist.command # Not needed on exFAT.
-# # double click on file
-# #
-# # If Gatekeeper gets in the way, remove apple extended attributes manually
-# # xattr -c make_playlist.command
-
-# # https://stackoverflow.com/a/29710607
-
-# cd -- "$(dirname "$0")"
-
-# /usr/bin/env python3 ./make_playlist.py
-
-# kill -s INT $$
