@@ -65,7 +65,7 @@ def list_files(path_to_walk):
             # Make its path name relative to videowall.html,
             # URL encode it with urllib.parse.quote,
             # and add it to the list.
-            file_name = file_name[3:]
+            file_name = os.path.relpath(file_name, os.path.dirname(SCRIPT_PATH))
             file_name = urllib.parse.quote(file_name)
             filtered_files.append(file_name)
 

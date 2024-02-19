@@ -1,6 +1,10 @@
 "use strict";
 
-const ORIGINAL_DOC_TITLE = document.title;
+
+const ORIGINAL_DOC_TITLE =
+    typeof STARTUP_DEFAULTS["TITLE"] === "undefined"
+        ? document.title
+        : STARTUP_DEFAULTS["TITLE"];
 const BEGIN_AT = STARTUP_DEFAULTS["BEGIN_AT"];
 const NB_VIDEOS_MAX = STARTUP_DEFAULTS["NB_VIDEOS_MAX"];
 const WHEEL_EVENT_DELAY = 200;
