@@ -1,7 +1,6 @@
 "use strict";
 
-
-const ORIGINAL_DOC_TITLE =
+const INITIAL_DOC_TITLE =
     typeof STARTUP_DEFAULTS["TITLE"] === "undefined"
         ? document.title
         : STARTUP_DEFAULTS["TITLE"];
@@ -68,7 +67,7 @@ function init() {
     VIDEO_TEMPLATE.classList.add("modified_in_javascript");
 
     // Set document title.
-    document.title = `${ORIGINAL_DOC_TITLE} | ${PLAYLIST.length} VIDEOS`;
+    document.title = `${INITIAL_DOC_TITLE} | ${PLAYLIST.length} VIDEOS`;
 
     // Read attributes of video template.
     V_ATTR["controls"] = VIDEO_TEMPLATE.controls;
@@ -556,6 +555,40 @@ function videoFullScreenToggle(_video) {
 /**
  *
  */
+let domWithVideo = void 0;
+let domWithThumbs = void 0;
+let currentView = "videos";
+function videoToggleThumbView() {
+    const container = document.getElementById("container");
+    if (domWithVideo === void 0) {
+        domWithVideo = container.innerHTML;
+    }
+    if (domWithThumbs === void 0) {
+        domWithThumbs = "";
+        for (let index = 0; index < PLAYLIST.length; index++) {
+            const videoSrc = PLAYLIST[index];
+            const lastIndex = videoSrc.lastIndexOf("/");
+            const thumbSrc =
+                videoSrc.substring(0, lastIndex) +
+                "/thumbs/" +
+                videoSrc.substring(lastIndex + 1) +
+                ".jpg";
+            domWithThumbs += `<a target="_blank" href="${videoSrc}"><img src="${thumbSrc}"></a>\n`;
+            console.log(domWithThumbs);
+        }
+    }
+    if (currentView === "videos") {
+        container.innerHTML = domWithThumbs;
+        currentView = "thumbs";
+    } else if (currentView === "thumbs") {
+        currentView = "videos";
+        container.innerHTML = domWithVideo;
+    }
+}
+
+/**
+ *
+ */
 function videoChangeObjectFitMode(_video, mode) {
     if (!(_video instanceof HTMLVideoElement)) return;
     if (mode === "cover") {
@@ -580,7 +613,7 @@ function videoChangeObjectFitMode(_video, mode) {
 /**
  *
  */
-function videoChangeObjectFitModeAll(mode) {
+function videoToggleObjectFitModeAll(mode) {
     for (let index = 0; index < NB_VIDEOS; index++) {
         const _video = ALL_VIDEOS[index];
         videoChangeObjectFitMode(_video, mode);
@@ -709,10 +742,13 @@ function keyboardShortcutHandler(event) {
         videoMuteToggle(getVideoUnderCursor());
     } else if (["r", "R"].includes(event.key)) {
         // -   <kbd>r</kbd> Toggle video object fit mode between “cover” mode and “contain” mode for all videos.
-        videoChangeObjectFitModeAll("toggle");
+        videoToggleObjectFitModeAll("toggle");
     } else if (["f", "F"].includes(event.key)) {
         // -   <kbd>f</kbd> Full screen the video under the mouse cursor.
         videoFullScreenToggle(getVideoUnderCursor());
+    } else if (["t", "T"].includes(event.key)) {
+        // -   <kbd>t</kbd> Toggle thumbnail / video view.
+        videoToggleThumbView();
     } else if ([">"].includes(event.key)) {
         // -   <kbd>></kbd> Speed up the track playback rate.
         videoSetPlaybackRateAll(+1);

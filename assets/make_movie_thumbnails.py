@@ -2,12 +2,12 @@
 
 """
 
-THMB_DIR = "thumbs"
-
 import os
 import sys
 from invoke import run
 import signal
+
+THMB_DIR = "thumbs"
 
 
 def __quit_gracefully(_, __):
@@ -35,8 +35,29 @@ def capture_snapshot(video_path, output_path):
     result = run(cmd, hide=True, warn=True)
     half_duration = float(result.stdout.strip()) / 2
     print(f"{half_duration:10.1f} s     {output_path}")
-    cmd = f'ffmpeg -ss {half_duration} -i {video_path} -frames:v 1 -q:v 2 -vf "scale=2000:1125:force_original_aspect_ratio=increase,crop=2000:1125" {output_path}'
+    cmd = (
+        f"ffmpeg -ss {half_duration} -i {video_path} -frames:v 1"
+        ' -q:v 2 -vf "scale=2000:1125:force_original_aspect_ratio=increase,crop=2000:1125"'
+        f" {output_path}"
+    )
     result = run(cmd, hide=True, warn=True)
+
+
+def capture_snapshot_video(input_jpeg_path, output_video_path):
+    # cmd = (
+    #     f"ffmpeg -y -hide_banner -loglevel panic -loop 1 -i "
+    #     f" {input_jpeg_path} -c:v libx264 -t 10 -pix_fmt yuv420p"
+    #     f" -vf scale=1280:720"
+    #     f" {output_video_path}"
+    # )
+    cmd = (
+        f"""ffmpeg -y -hide_banner -loglevel panic -loop 1 -i"""
+        f""" {input_jpeg_path} -c:v libx264 -t 10 -pix_fmt yuv420p"""
+        f""" -vf "scale=1280:720,setpts='if(eq(N,0),0,PTS)'"""
+        f""" {output_video_path}"""
+    )
+    result = run(cmd, hide=True, warn=True)
+    print(result)
 
 
 def process_videos(directory):
@@ -75,6 +96,12 @@ def process_videos(directory):
                 continue
             capture_snapshot(video_path, snapshot_path)
 
+            do_capture_snapshot_video = False
+            if do_capture_snapshot_video:
+                output_video_path = snapshot_path + ".mp4"
+                print(f"output_video_path = {output_video_path}")
+                capture_snapshot_video(snapshot_path, output_video_path)
+
 
 def generate_html(directory):
     image_files = []
@@ -100,7 +127,7 @@ def generate_html(directory):
         display: flex;
         flex-wrap: wrap;
         justify-content: space-around;
-        background-color: black;;
+        background-color: black;
     }}
 
     img {{
@@ -141,7 +168,7 @@ def sanity_checks(target_directory):
 def main(target_directory=None):
     sanity_checks(target_directory)
     process_videos(target_directory)
-    generate_html(target_directory)
+    # generate_html(target_directory)
     print("DONE MAKING MOVIE THUMBNAILS")
 
 

@@ -15,8 +15,8 @@ IGNORED_EXTENSIONS = (".jpg", ".jpeg", ".html")
 # If EXCLUDES is empty, this test is skipped.
 # If EXCLUDES contains only one element, this
 # element must be followed by a comma,
-# otherwise Python treats the tuple as a string.
-EXCLUDES = ("novideowall",)
+# otherwise Python returns a string.
+EXCLUDES = ("novideowall", "thumbs")
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 PLAYLIST_FILE_NAME = f"{SCRIPT_PATH}{os.path.sep}playlist.js"
@@ -37,6 +37,12 @@ def list_files(path_to_walk):
 
             # Test if it is a hidden file.
             if file.startswith("."):
+                if (
+                    os.path.abspath(file_name)
+                    == f"{os.path.abspath(path_to_walk)}{os.path.sep}.DS_Store"
+                ):
+                    # Do not report the top .DS_Store file.
+                    continue
                 hidden_files.append(os.path.abspath(file_name))
                 continue
 
@@ -140,10 +146,9 @@ def report_alien_files(files):
 
 
 def sanity_checks(target_directory):
-    # Vérifie que le répertoire existe
+    # Checks that the directory exists.
     if not os.path.exists(target_directory) or not os.path.isdir(target_directory):
-        print(f"Le répertoire n’existe pas : {target_directory}")
-        sys.exit(1)
+        raise SystemExit(f"The directory does not exist: {target_directory}")
 
 
 def main(target_directory=None):
@@ -156,5 +161,10 @@ def main(target_directory=None):
 
 
 if __name__ == "__main__":
-    target_directory = sys.argv[1] if len(sys.argv) > 1 else "../../videos/"
+
+    target_directory = (
+        sys.argv[1]
+        if len(sys.argv) > 1 and os.path.isdir(sys.argv[1])
+        else "../../videos/"
+    )
     main(target_directory)
