@@ -40,7 +40,6 @@ python3 make_playlist.py
 
 ## Shortcuts
 
--   <kbd>mouse wheel</kbd> Play next or previous videos in the player currently under the mouse cursor.
 -   <kbd>↑</kbd> Increase layout density.
 -   <kbd>↓</kbd> Decrease layout density.
 -   <kbd>Shift+0..9</kbd> Change player layout.
@@ -54,6 +53,8 @@ python3 make_playlist.py
 -   <kbd>Alt+→</kbd> Moves 10 tracks backward in the playlist.
 -   <kbd>Shift+→</kbd> Moves 1 track backward in the playlist.
 -   <kbd>→</kbd> Seek backward 5 seconds for track under the mouse cursor.
+-   <kbd>y</kbd> Moves 1 track backward in the playlist.
+-   <kbd>x</kbd> Moves 1 track forward in the playlist.
 -   <kbd>s</kbd> Shuffle the order of the playlist.
 -   <kbd>i</kbd> Open the track under the mouse cursor in another tab and copy the URL in the clipboard.
 -   <kbd>Home</kbd> Seek to the beginning of the video.
@@ -66,16 +67,17 @@ python3 make_playlist.py
 -   <kbd>m</kbd> Mute / unmute the track under the mouse cursor.
 -   <kbd>r</kbd> Toggle video object fit mode between “cover” mode and “contain” mode for all videos.
 -   <kbd>f</kbd> Full screen the video under the mouse cursor.
+-   <kbd>t</kbd> Toggle thumbnail / video view.
 -   <kbd>></kbd> Speed up the track playback rate.
 -   <kbd><</kbd> Slow down the track playback rate.
 -   <kbd>?</kbd> Open help file.
 
 ## Web browser compatibility on macOS
 
--   Chrome, works best.
+-   Blink based browsers (Chrome, Opera, Brave...) work best.
 -   Safari, but the Developer tools need to be activated and the browser relaunched.
 -   Firefox, works but the videos may not play at start, you need to press k, ← or → .
 
-<p align="center">
+<p style="text-align:center">
 <img height=400px src="../../raw/master/assets/videowall.jpg" />
 </p>
