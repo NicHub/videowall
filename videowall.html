@@ -104,11 +104,11 @@
     <script>
         "use strict";
         /**
-        * Load scripts asynchronously.
-        * The playlist can be specified in the “playlist” GET parameter.
-        * For example:
-        * videowall.html?playlist=./assets/playlist_selection_1.js
-        */
+         * Load scripts asynchronously.
+         * The playlist can be specified in the “playlist” GET parameter.
+         * For example:
+         * videowall.html?playlist=./assets/playlist_selection_1.js
+         */
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         let playlistURL = urlParams.get("playlist");
@@ -156,15 +156,9 @@
 
         /**
          * Startup defaults.
-         *  They can change at runtime.
-         *  They can also be declared in the playlist.
-         *  Here is an example:
-         *
-         *  STARTUP_DEFAULTS = {
-         *      BEGIN_AT: 0, // Time offset when starting to play. Given in fraction of total time.
-         *      NB_VIDEOS_MAX: 6 ** 2, // Can take the value 2 or any perfect square number (1, 4, 9, 16,...).
-         *      NB_VIDEOS: 4,
-         *  };
+         * They can change at runtime.
+         * They can also be declared in the playlist.
+         * Check the example in the README.md file.
          */
         if (typeof (STARTUP_DEFAULTS) === "undefined") { var STARTUP_DEFAULTS = {}; }
         if (typeof (STARTUP_DEFAULTS["BEGIN_AT"]) === "undefined") { STARTUP_DEFAULTS["BEGIN_AT"] = 1 / 4; }

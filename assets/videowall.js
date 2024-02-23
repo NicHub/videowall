@@ -757,7 +757,7 @@ function keyboardShortcutHandler(event) {
         videoSetPlaybackRateAll(-1);
     } else if (["?"].includes(event.key)) {
         // -   <kbd>?</kbd> Open help file.
-        const helpFileURL = "./assets/videowall.js";
+        const helpFileURL = "./README.md";
         window.open(helpFileURL);
     } else {
         return;

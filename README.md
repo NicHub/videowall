@@ -9,9 +9,10 @@
 
 This is a simple video wall that runs in a browser without the need for a web server.
 The layout can be changed.
-As browsers do not have access to the file system, the list of video files must be generated and saved in a JavaScript file called `playlist.js`.
+As browsers do not have access to the file system, the list of video files must be generated and saved in a playlist in JavaScript format.
+The defautlt playlist is called `playlist.js`, but this can be overridden with a GET parameter.
 
-## playlist.js format
+## Playlist format
 
 ```javascript
 "use strict";
@@ -19,12 +20,16 @@ As browsers do not have access to the file system, the list of video files must 
 // STARTUP_DEFAULTS are optional in `playlist.js`.
 // If given, they override the STARTUP_DEFAULTS defined in videowall.html.
 var STARTUP_DEFAULTS = {
-    BEGIN_AT: 0.01, // Time offset if you don't want to start at the beginning of the video. Time offset is expressed as a fraction of the total time, i.e. from 0 to 1.
+    BEGIN_AT: 0.01, // Time offset if you don’t want to start at the beginning of the video. Time offset is expressed as a fraction of the total time, i.e. from 0 to 1.
     NB_VIDEOS_MAX: 6 ** 2, // Can take the value 2 or any perfect square number (1, 4, 9, 16,...).
-    NB_VIDEOS: 9,
+    NB_VIDEOS: 9, // Number of videos visible on startup. Same constraints as NB_VIDEOS_MAX.
+    TITLE: "TOP 100", // Overridde the default title.
 };
 
-var PLAYLIST = ["../file_1.mp4", "../file_2.mp4"];
+var PLAYLIST = [
+    "../file_1.mp4",
+    "../file_2.mp4"
+];
 ```
 
 ## Usage
@@ -66,15 +71,17 @@ python3 make_playlist.py
 -   <kbd>.</kbd> Skip to the previous frame.
 -   <kbd>m</kbd> Mute / unmute the track under the mouse cursor.
 -   <kbd>r</kbd> Toggle video object fit mode between “cover” mode and “contain” mode for all videos.
--   <kbd>f</kbd> Full screen the video under the mouse cursor.
+-   <kbd>f</kbd> Full screen the video under the mouse cursor.¹
 -   <kbd>t</kbd> Toggle thumbnail / video view.
 -   <kbd>></kbd> Speed up the track playback rate.
 -   <kbd><</kbd> Slow down the track playback rate.
 -   <kbd>?</kbd> Open help file.
 
+¹ If you’re using a Blink-based browser (Chrome, Opera, Brave...), use the <kbd>f</kbd> shortcut to switch to full screen because if you use the built-in full screen button, the other keyboard shortcuts will no longer work.
+
 ## Web browser compatibility on macOS
 
--   Blink based browsers (Chrome, Opera, Brave...) work best.
+-   Blink-based browsers (Chrome, Opera, Brave...) work best.
 -   Safari, but the Developer tools need to be activated and the browser relaunched.
 -   Firefox, works but the videos may not play at start, you need to press k, ← or → .
 

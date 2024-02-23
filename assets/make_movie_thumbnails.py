@@ -7,7 +7,8 @@ import sys
 from invoke import run
 import signal
 
-THMB_DIR = "thumbs"
+THUMB_DIR = "thumbs"
+FORCE_CREATE = False
 
 
 def __quit_gracefully(_, __):
@@ -35,9 +36,10 @@ def capture_snapshot(video_path, output_path):
     result = run(cmd, hide=True, warn=True)
     half_duration = float(result.stdout.strip()) / 2
     print(f"{half_duration:10.1f} s     {output_path}")
+    img_w, img_h = (250, int(250 * 9 / 16))
     cmd = (
-        f"ffmpeg -ss {half_duration} -i {video_path} -frames:v 1"
-        ' -q:v 2 -vf "scale=2000:1125:force_original_aspect_ratio=increase,crop=2000:1125"'
+        f"ffmpeg -y -ss {half_duration} -i {video_path} -frames:v 1"
+        f' -q:v 2 -vf "scale={img_w}:{img_h}:force_original_aspect_ratio=increase,crop={img_w}:{img_h}"'
         f" {output_path}"
     )
     result = run(cmd, hide=True, warn=True)
@@ -63,7 +65,7 @@ def capture_snapshot_video(input_jpeg_path, output_video_path):
 def process_videos(directory):
     for root, _, files in sorted(os.walk(directory)):
         # Don’t scan the thumb dir itself.
-        if THMB_DIR in root:
+        if THUMB_DIR in root:
             continue
 
         # List files of interest.
@@ -71,7 +73,7 @@ def process_videos(directory):
         files = [file for file in files if "nothumb" not in file]
 
         # Create thumb dir if needed.
-        thumb_dir = root + os.path.sep + THMB_DIR + os.path.sep
+        thumb_dir = root + os.path.sep + THUMB_DIR + os.path.sep
         if len(files) > 0:
             os.makedirs(thumb_dir, exist_ok=True)
 
@@ -92,10 +94,11 @@ def process_videos(directory):
             video_path = os.path.join(root, file)
             fname = os.path.basename(video_path)
             snapshot_path = thumb_dir + fname + ".jpg"
-            if os.path.exists(snapshot_path):
+            if os.path.exists(snapshot_path) and not FORCE_CREATE:
                 continue
             capture_snapshot(video_path, snapshot_path)
 
+            # Thumb in video format (legacy, not used).
             do_capture_snapshot_video = False
             if do_capture_snapshot_video:
                 output_video_path = snapshot_path + ".mp4"
@@ -104,6 +107,10 @@ def process_videos(directory):
 
 
 def generate_html(directory):
+    """
+    Legacy code. Not used anymore.
+    The gallery is now included in the videowall itself.
+    """
     image_files = []
     for root, _, files in sorted(os.walk(directory)):
         for file in sorted(files):
@@ -144,7 +151,7 @@ def generate_html(directory):
 
     # Ajoute une balise img pour chaque image
     for image_file in image_files:
-        video_file = image_file.replace(THMB_DIR + os.path.sep, "")
+        video_file = image_file.replace(THUMB_DIR + os.path.sep, "")
         video_file = os.path.splitext(video_file)[0]
         html_content += (
             f'<a target="_blank" href="{video_file}"><img src="{image_file}"></a>\n'
