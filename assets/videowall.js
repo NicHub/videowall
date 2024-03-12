@@ -272,7 +272,11 @@ function nextVideoSingle(_video, increment) {
     if (!(_video instanceof HTMLVideoElement)) return;
     // Get and Set movie metadata.
     let moviepathidskey = parseInt(_video.getAttribute("data-moviepathidskey"));
-    const moviepathids = _video.getAttribute("data-moviepathids").split(",");
+    const moviepathids =
+        _video.getAttribute("data-moviepathids") === ""
+            ? [] // Force to [] if data-moviepathids is empty.
+                 // Otherwise it would be [""] and that’s bad because length is not 0.
+            : _video.getAttribute("data-moviepathids").split(",");
     moviepathidskey = (moviepathidskey + increment) % moviepathids.length;
     moviepathidskey =
         moviepathidskey < 0
@@ -283,6 +287,9 @@ function nextVideoSingle(_video, increment) {
     const newmoviepathid = parseInt(moviepathids[moviepathidskey]);
     _video.setAttribute("data-moviepathid", newmoviepathid);
 
+    if (moviepathids.length === 0) {
+        return;
+    }
     // Set video source and play.
     setVideoSrcAndPlay(_video, PLAYLIST[newmoviepathid]);
 }
