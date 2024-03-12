@@ -1,5 +1,13 @@
 # VIDEO WALL
 
+<p style="text-align:center">
+    <img
+        style="width:50%"
+        src="./assets/videowall.jpg"
+        alt="videowall"
+        onerror="this.onerror=null;this.src='../../raw/master/assets/videowall.jpg';">
+</p>
+
 ## Prerequisites
 
 -   A web browser
@@ -84,7 +92,3 @@ python3 make_playlist.py
 -   Blink-based browsers (Chrome, Opera, Brave...) work best.
 -   Safari, but the Developer tools need to be activated and the browser relaunched.
 -   Firefox, works but the videos may not play at start, you need to press k, ← or → .
-
-<p style="text-align:center">
-<img height=400px src="../../raw/master/assets/videowall.jpg" />
-</p>
