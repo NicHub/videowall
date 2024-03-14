@@ -140,9 +140,17 @@ def report_alien_files(files):
         print('"' + '"\n"'.join(files["non_supported_extension_files"]) + '"')
 
     # Print the list of files with excludes.
-    if len(files["excluded_files"]) > 0:
+    print_excludes = False
+    if len(files["excluded_files"]) > 0 and print_excludes:
         print(f'\n{len(files["excluded_files"])} FILE(S) WITH EXCLUDE STRING FOUND:')
         print('"' + '"\n"'.join(files["excluded_files"]) + '"')
+
+
+def delete_hidden_files(files):
+    """___"""
+    for hidden_file in files["hidden_files"]:
+        if os.path.isfile(hidden_file):
+            os.remove(hidden_file)
 
 
 def sanity_checks(target_directory):
@@ -158,6 +166,7 @@ def main(target_directory=None):
     playlist = make_playlist(files["filtered_files"])
     save_playlist(playlist, PLAYLIST_FILE_NAME)
     report_alien_files(files)
+    delete_hidden_files(files)
 
 
 if __name__ == "__main__":
